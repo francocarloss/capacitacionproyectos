@@ -50,7 +50,7 @@ nav a{text-decoration:none; color:var(--muted); font-weight:800; padding:8px 14p
 nav a:hover{color:var(--ink)}
 nav a[aria-current="page"]{background:var(--surface); color:var(--violet); box-shadow:var(--shadow)}
 .tools{display:flex; align-items:center; gap:10px; margin-left:auto}
-@media (max-width:760px){.tools{order:2} nav{order:3; flex-basis:100%; flex-wrap:nowrap; overflow-x:auto; padding-bottom:4px} nav a{white-space:nowrap} .mechip span{display:none} .mechip{padding:4px}}
+@media (max-width:760px){.topin{gap:10px} .brand{font-size:19px} .brand img{width:26px;height:26px} .iconbtn{width:40px;height:40px} .tools{order:2} nav{order:3; flex-basis:100%; flex-wrap:nowrap; overflow-x:auto; padding-bottom:4px} nav a{white-space:nowrap} .mechip span{display:none} .mechip{padding:4px}}
 .iconbtn{width:44px; height:44px; border-radius:50%; border:0; background:var(--surface); box-shadow:var(--shadow); cursor:pointer; display:grid; place-items:center; color:var(--ink)}
 .iconbtn svg{width:22px; height:22px}
 .mechip{display:flex; align-items:center; gap:8px; border:0; background:var(--surface); box-shadow:var(--shadow); border-radius:999px; padding:4px 14px 4px 4px; font:800 14px var(--body); color:var(--ink); cursor:pointer}
