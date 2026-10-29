@@ -190,3 +190,50 @@ td.num,th.num{text-align:right; font-variant-numeric:tabular-nums}
 .toast{position:fixed; left:50%; bottom:calc(22px + env(safe-area-inset-bottom, 0px)); transform:translateX(-50%); background:var(--ink); color:var(--bg); padding:12px 22px; border-radius:999px; font-weight:800; z-index:20; max-width:calc(100% - 32px); box-shadow:var(--shadow)}
 .pop{animation:pop .5s ease} @keyframes pop{0%{transform:scale(.8)} 60%{transform:scale(1.06)} 100%{transform:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+
+/* Demuestra tu aprendizaje */
+.cpick{display:flex; gap:12px; overflow-x:auto; padding:4px 2px 10px}
+.cchip{flex:none; display:flex; align-items:center; gap:10px; border:2px solid transparent; background:var(--surface); box-shadow:var(--shadow); border-radius:999px; padding:6px 16px 6px 6px; font:800 14px var(--body); color:var(--ink); cursor:pointer; max-width:280px; text-align:left}
+.cchip.on{border-color:var(--claude)}
+.cchip .ring{width:42px; height:42px; border-radius:50%; flex:none; display:grid; place-items:center; background:conic-gradient(var(--mint) calc(var(--pct) * 1%), var(--soft) 0)}
+.cchip .ring span{width:32px; height:32px; border-radius:50%; background:var(--surface); display:grid; place-items:center; font-size:11px; font-weight:800}
+.pathbox{border-radius:36px; background:var(--c-soft); padding:clamp(20px,4vw,36px); display:grid; gap:22px}
+.pathhead{display:grid; gap:8px; max-width:560px}
+.pathhead .org{font-weight:800; font-size:13px; color:var(--c)}
+.pathhead .meter{background:var(--surface)} .pathhead .meter i{background:var(--c)}
+.path{display:grid; gap:62px; justify-items:center; padding-block:10px}
+.pnode{display:grid; justify-items:center; gap:8px; transform:translateX(var(--x)); position:relative; width:min(240px,70vw)}
+.pbtn{width:84px; height:84px; border-radius:50%; border:0; font:800 30px var(--display); display:grid; place-items:center; cursor:pointer; color:#fff; background:var(--c); box-shadow:0 7px 0 color-mix(in srgb, var(--c) 60%, #000); transition:transform .12s}
+.pbtn:active:not(:disabled){transform:translateY(5px); box-shadow:0 2px 0 color-mix(in srgb, var(--c) 60%, #000)}
+.pbtn.ok{background:var(--sun); color:#5a3d00; box-shadow:0 7px 0 #c99700}
+.pbtn.lock{background:var(--line); color:var(--muted); box-shadow:0 7px 0 color-mix(in srgb, var(--line) 70%, #000); cursor:not-allowed}
+.pbtn.next{animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.go{position:absolute; top:-38px; background:var(--surface); color:var(--c); font:800 13px var(--body); letter-spacing:.06em; padding:6px 12px; border-radius:12px; box-shadow:var(--shadow); white-space:nowrap}
+.go::after{content:""; position:absolute; left:50%; bottom:-6px; margin-left:-6px; border:6px solid transparent; border-bottom:0; border-top-color:var(--surface)}
+.plabel{font-weight:800; font-size:14px; text-align:center; line-height:1.25}
+.plabel small{display:block; font-weight:700; color:var(--muted); font-size:12px; margin-top:2px}
+.trophy{width:84px; height:84px; border-radius:24px; display:grid; place-items:center; background:var(--surface); color:var(--muted)}
+.trophy.on{background:var(--sun); color:#5a3d00}
+.btn.mintb{background:var(--mint); color:#fff} .btn.roseb{background:var(--bad); color:#fff}
+.lesson{position:fixed; inset:0; z-index:30; background:var(--bg); display:grid; grid-template-rows:auto 1fr auto; padding-top:env(safe-area-inset-top, 0px)}
+.lstop{display:flex; align-items:center; gap:16px; padding:16px max(16px, env(safe-area-inset-left, 0px)); max-width:900px; width:100%; margin:0 auto}
+.lmeter{flex:1; height:18px} .lmeter i{background:var(--mint)}
+.hearts{display:flex; gap:2px}
+.lbody{max-width:760px; width:100%; margin:0 auto; padding:12px max(16px, env(safe-area-inset-left, 0px)) 24px; display:grid; gap:24px; align-content:start; overflow-y:auto}
+.lq{display:flex; gap:16px; align-items:flex-start}
+.mascot{position:relative; flex:none}
+.mascot .say{position:absolute; left:50%; bottom:-12px; transform:translateX(-50%); background:var(--surface); box-shadow:var(--shadow); font:800 13px var(--display); padding:5px 10px; border-radius:12px 12px 12px 3px; white-space:nowrap}
+.lq h2{font-size:clamp(22px,3vw,30px)}
+.lopts{display:grid; gap:12px}
+.lopt{display:flex; gap:14px; align-items:center; text-align:left; font:700 17px var(--body); padding:16px 18px; border-radius:18px; border:2px solid var(--line); border-bottom-width:5px; background:var(--surface); color:var(--ink); cursor:pointer}
+.lopt kbd{flex:none; width:30px; height:30px; border-radius:9px; border:2px solid var(--line); display:grid; place-items:center; font:800 14px var(--body); color:var(--muted)}
+.lopt.sel{border-color:var(--sky); background:var(--sky-soft)}
+.lopt.right{border-color:var(--ok); background:var(--mint-soft)} .lopt.wrong{border-color:var(--bad); background:var(--rose-soft)}
+.lfoot{border-top:2px solid var(--line); background:var(--surface); padding:18px max(16px, env(safe-area-inset-left, 0px)) calc(18px + env(safe-area-inset-bottom, 0px))}
+.lfoot.good{background:var(--mint-soft); border-color:transparent; color:var(--ok)} .lfoot.badf{background:var(--rose-soft); border-color:transparent; color:var(--bad)}
+.lfoot.good p,.lfoot.badf p{color:var(--ink)}
+.lfin{max-width:760px; margin:0 auto; display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap}
+.lfin .btn{min-width:160px}
+.lstats{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; max-width:480px; margin:0 auto; width:100%}
+.lbody.center{justify-items:center; text-align:center}

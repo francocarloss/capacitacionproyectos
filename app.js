@@ -75,13 +75,25 @@ function metrics(p) {
   return { plan, total, actual, expected, done, status, thisWeek, streak, compliance, logs, end: plan.length ? plan[plan.length - 1].endAt : start, weekIndex: Math.max(0, Math.floor(weeks)) };
 }
 const courseHours = (p, id) => S.logs.filter(l => l.member === p.name && l.course_id === id).reduce((a, l) => a + Number(l.hours), 0);
+// ---------------- Dominio (Demuestra tu aprendizaje) ----------------
+const examCourses = p => planFor(p).filter(c => window.MASTERY[c.id]);
+function mastery(p) {
+  const ex = S.training.filter(x => x.member === p.name && x.activity === "exam");
+  const passed = new Set(ex.filter(x => x.payload && x.payload.passed).map(x => x.item_id));
+  const perfect = new Set(ex.filter(x => x.payload && x.payload.passed && x.score === x.max_score).map(x => x.item_id));
+  const xp = ex.reduce((a, x) => a + (Number(x.payload && x.payload.xp) || 0), 0);
+  const byCourse = {}; let total = 0, done = 0;
+  examCourses(p).forEach(c => { const n = window.MASTERY[c.id].length, k = window.MASTERY[c.id].filter((_, i) => passed.has(c.id + ":" + i)).length;
+    byCourse[c.id] = { n, k, pct: Math.round(k / n * 100) }; total += n; done += k; });
+  return { passed, perfect, xp, byCourse, total, done, pct: total ? Math.round(done / total * 100) : 0, verified: Object.values(byCourse).filter(c => c.k === c.n).length };
+}
 function training(p) {
   const t = S.training.filter(x => x.member === p.name);
   const best = act => { const m = {}; t.filter(x => x.activity === act).forEach(x => { if (!m[x.item_id] || x.score > m[x.item_id].score) m[x.item_id] = x; }); return Object.values(m); };
   const quiz = best("quiz"), hallu = best("hallu"), prompt = best("prompt"), challenges = t.filter(x => x.activity === "challenge");
   const quizScore = quiz.reduce((a, x) => a + x.score, 0);
   const points = quizScore * 10 + hallu.reduce((a, x) => a + x.score, 0) * 15 + prompt.reduce((a, x) => a + x.score, 0) * 5 + challenges.length * 30;
-  return { quiz, hallu, prompt, quizScore, points, challenges };
+  return { quiz, hallu, prompt, quizScore, points: points + mastery(p).xp, challenges };
 }
 function badges(p) {
   const m = metrics(p), tr = training(p);
@@ -90,7 +102,8 @@ function badges(p) {
     { t: "Mitad de ruta", on: m.total > 0 && m.actual >= m.total / 2 }, { t: "Ruta completa", on: m.plan.length > 0 && m.plan.every(c => m.done.has(c.id)) },
     { t: "Quiz 80%", on: tr.quizScore >= Math.ceil(window.QUIZ.length * .8) },
     { t: "Detective", on: tr.hallu.length >= window.HALLU.length && tr.hallu.every(h => h.score === h.max_score) },
-    { t: "Prompt pro", on: tr.prompt.some(x => x.score === x.max_score) }, { t: "Retador", on: tr.challenges.length >= 3 }
+    { t: "Prompt pro", on: tr.prompt.some(x => x.score === x.max_score) }, { t: "Retador", on: tr.challenges.length >= 3 },
+    { t: "Curso verificado", on: mastery(p).verified > 0 }, { t: "Mente maestra", on: mastery(p).pct === 100 }
   ];
 }
 const avatarOf = (m, size) => m && m.avatar ? AV.svg(m.avatar, size) : `<div class="silhouette" style="width:${size}px;height:${size}px;font-size:${size / 3}px">${initials(m.name)}</div>`;
@@ -172,24 +185,26 @@ function viewRuta() {
     <div class="tile" style="--t:var(--violet);--t-soft:var(--violet-soft)"><span>Esta semana</span><b>${h1(m.thisWeek)} / ${h1(p.hours_per_week)} h</b></div>
     <div class="tile" style="--t:var(--mint);--t-soft:var(--mint-soft)"><span>Cursos</span><b>${m.done.size} / ${m.plan.length}</b></div>
     <div class="tile" style="--t:var(--claude);--t-soft:var(--claude-soft)"><span>Racha</span><b>${m.streak} sem.</b></div>
-    <div class="tile" style="--t:var(--sky);--t-soft:var(--sky-soft)"><span>Puntos</span><b>${training(p).points}</b></div></section>
+    <div class="tile" style="--t:var(--sky);--t-soft:var(--sky-soft)"><span>Dominio demostrado</span><b>${mastery(p).pct}%</b></div></section>
   <section class="stack"><h2>Tu plan, curso por curso</h2><div class="grid2">${m.plan.map((c, i) => {
-    const hrs = courseHours(p, c.id), done = m.done.has(c.id), isNow = i === nowIdx, late = !done && c.endAt < now, cp = Math.min(100, hrs / c.hours * 100);
+    const ms = mastery(p).byCourse[c.id], hrs = courseHours(p, c.id), done = m.done.has(c.id), isNow = i === nowIdx, late = !done && c.endAt < now, cp = Math.min(100, hrs / c.hours * 100);
     return `<article class="course ${COLORS[i % COLORS.length]} ${done ? "done" : ""} ${isNow ? "now" : ""}">
       <div class="hd"><span class="num">${done ? "✓" : i + 1}</span><div class="stack" style="gap:4px"><span class="org">${esc(c.org)}</span><h3>${esc(c.name)}</h3></div></div>
       <div class="tags"><span class="tag">${fmtDate(c.startAt)} → ${fmtDate(c.endAt)}</span><span class="tag">${h1(c.hours)} h${c.est ? " est." : ""}</span>
-        ${done ? `<span class="pill ok">Completado</span>` : late ? `<span class="pill bad">Debía terminar</span>` : isNow ? `<span class="pill acc">En curso</span>` : ""}</div>
+        ${done ? `<span class="pill ok">Completado</span>` : late ? `<span class="pill bad">Debía terminar</span>` : isNow ? `<span class="pill acc">En curso</span>` : ""}
+        ${ms ? (ms.k === ms.n ? `<span class="pill ok">★ Verificado</span>` : `<span class="tag">Dominio ${ms.pct}%</span>`) : ""}</div>
       <p><b>Al terminar sabrás:</b> ${esc(c.learn)}</p>
       <details><summary>Ver módulos</summary><p class="small muted" style="margin-top:6px">${esc(c.detail)}</p><ul>${c.modules.map(x => `<li>${esc(x)}</li>`).join("")}</ul></details>
       <div class="meter"><i style="width:${cp}%"></i></div>
       <div class="ft"><span class="small"><b>${h1(hrs)}</b> de ${h1(c.hours)} h registradas</span>
-        <div class="row">${c.url ? `<a class="btn white small" href="${c.url}" target="_blank" rel="noopener">Ir al curso</a>` : ""}<button class="btn small ${done ? "" : "primary"}" data-toggle="${c.id}" type="button">${done ? "Reabrir" : "Marcar completado"}</button></div></div></article>`; }).join("")}</div></section>
+        <div class="row">${c.url ? `<a class="btn white small" href="${c.url}" target="_blank" rel="noopener">Ir al curso</a>` : ""}${ms ? `<button class="btn white small" data-demo="${c.id}" type="button">Demuéstralo</button>` : ""}<button class="btn small ${done ? "" : "primary"}" data-toggle="${c.id}" type="button">${done ? "Reabrir" : "Marcar completado"}</button></div></div></article>`; }).join("")}</div></section>
   <section class="two"><div class="card stack"><h3>Cursos que ya no necesitas llevar</h3><p class="muted small" style="margin:0">Tu ruta se basa en Claude: estos cursos de otras plataformas cubren lo mismo.</p>
       <ul class="list">${window.SKIPPED.map(s => `<li><b class="strike">${esc(s.name)}</b><span class="small muted">${esc(s.why)}</span></li>`).join("")}</ul></div>
     <div class="card stack"><h3>Opcionales</h3><ul class="list">${window.OPTIONAL.map(s => `<li><b>${esc(s.name)}</b><span class="small muted">${esc(s.why)}</span></li>`).join("")}</ul></div></section>`;
 }
 function wireRuta(v) {
   v.addEventListener("click", async e => {
+    const d = e.target.closest("[data-demo]"); if (d) { DEM.course = d.dataset.demo; location.hash = "#demuestra"; return; }
     const b = e.target.closest("[data-toggle]"); if (!b) return;
     const id = b.dataset.toggle, cur = S.statuses.find(s => s.member === S.me && s.course_id === id), done = cur && cur.status === "completado";
     try { await Store.setStatus({ member: S.me, course_id: id, status: done ? "en_curso" : "completado", completed_at: done ? null : isoDate(new Date()) }); await loadAll(); render(); toast(done ? "Curso reabierto" : "¡Curso completado!"); }
@@ -235,9 +250,10 @@ function viewEquipo() {
       <div class="meter" style="width:100%"><i style="width:${pct}%"></i><u style="left:calc(${exp}% - 2px)"></u></div>
       <div class="small muted">${h1(x.actual)} de ${h1(x.total)} h · ${x.done.size}/${x.plan.length} cursos · termina ${fmtDate(x.end)}</div>
       <div class="small"><b>${tr.points}</b> puntos · racha de ${x.streak} sem.</div>
+      <div class="small"><b>Dominio demostrado: ${mastery(m).pct}%</b> · ${mastery(m).done}/${mastery(m).total} módulos · ${mastery(m).verified} cursos verificados</div>
       <div class="badges">${badges(m).filter(b => b.on).map(b => `<span class="badge on">★ ${b.t}</span>`).join("") || `<span class="small muted">Sin insignias todavía</span>`}</div></div>`; }).join("")}</section>
-  ${conf.length ? `<section class="card stack"><h3>Tabla de cumplimiento</h3><div class="tablebox"><table><thead><tr><th>#</th><th>Persona</th><th class="num">Reto</th><th class="num">Horas</th><th class="num">Esperado</th><th class="num">Cumplimiento</th><th class="num">Puntos</th></tr></thead><tbody>
-    ${conf.map((r, i) => `<tr><td>${i + 1}</td><td>${esc(r.m.name)}</td><td class="num">${h1(r.m.hours_per_week)} h/sem</td><td class="num">${h1(r.x.actual)}</td><td class="num">${h1(r.x.expected)}</td><td class="num">${r.x.compliance}%</td><td class="num">${r.tr.points}</td></tr>`).join("")}</tbody></table></div></section>` : ""}`;
+  ${conf.length ? `<section class="card stack"><h3>Tabla de cumplimiento</h3><div class="tablebox"><table><thead><tr><th>#</th><th>Persona</th><th class="num">Reto</th><th class="num">Horas</th><th class="num">Esperado</th><th class="num">Cumplimiento</th><th class="num">Dominio</th><th class="num">Puntos</th></tr></thead><tbody>
+    ${conf.map((r, i) => `<tr><td>${i + 1}</td><td>${esc(r.m.name)}</td><td class="num">${h1(r.m.hours_per_week)} h/sem</td><td class="num">${h1(r.x.actual)}</td><td class="num">${h1(r.x.expected)}</td><td class="num">${r.x.compliance}%</td><td class="num">${mastery(r.m).pct}%</td><td class="num">${r.tr.points}</td></tr>`).join("")}</tbody></table></div></section>` : ""}`;
 }
 
 function viewPerfil() {
@@ -253,7 +269,7 @@ function viewEntrenar() {
   const p = meM(), tr = training(p), bs = badges(p);
   const tabs = [["quiz", "Quiz"], ["hallu", "Detecta la alucinación"], ["prompt", "Laboratorio de prompts"], ["cards", "Tarjetas"], ["reto", "Reto de la semana"]];
   return `<section class="banner" style="background:linear-gradient(135deg,#21b47e,#14936a)"><div class="stack"><span class="kicker">Entrenamiento</span><h1>Practica lo que vas aprendiendo</h1>
-      <p>Cada actividad suma puntos e insignias. Llevas <b>${tr.points} puntos</b> y ${bs.filter(b => b.on).length} de 8 insignias.</p>
+      <p>Cada actividad suma puntos e insignias. Llevas <b>${tr.points} puntos</b> y ${bs.filter(b => b.on).length} de ${bs.length} insignias.</p>
       <div class="badges">${bs.map(b => `<span class="chip" style="${b.on ? "background:#fff;color:#14936a" : ""}">${b.on ? "★ " : ""}${b.t}</span>`).join("")}</div></div>
     <div class="ava">${AV.svg(p.avatar, 180)}<span class="bubble">¡A entrenar!</span></div></section>
   <div class="tabs" role="tablist">${tabs.map(([k, t]) => `<button class="tab" role="tab" type="button" data-tab="${k}" aria-selected="${TR.tab === k}">${t}</button>`).join("")}</div>
@@ -324,8 +340,118 @@ function wireEntrenar(v) {
   });
 }
 
+
+// ---------------- Demuestra tu aprendizaje (estilo Duolingo) ----------------
+const DEM = { course: null };
+const TROPHY = `<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/></svg>`;
+const LOCK = `<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>`;
+const HEART = on => `<svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 21s-7.5-4.6-9.5-9.3C1 8 3.4 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.6 0 6 3.5 4.5 7.2C19.5 16.4 12 21 12 21Z" fill="${on ? "#ff4b6e" : "var(--line)"}"/></svg>`;
+function viewDemuestra() {
+  const p = meM(), ms = mastery(p), courses = examCourses(p);
+  if (!DEM.course || !courses.find(c => c.id === DEM.course)) DEM.course = (courses.find(c => ms.byCourse[c.id].k < ms.byCourse[c.id].n) || courses[0]).id;
+  const ci = courses.findIndex(c => c.id === DEM.course), c = courses[ci], mods = window.MASTERY[c.id], col = COLORS[planFor(p).findIndex(x => x.id === c.id) % COLORS.length];
+  const next = mods.findIndex((_, i) => !ms.passed.has(c.id + ":" + i));
+  return `<section class="banner" style="background:linear-gradient(135deg,#ff9a5c,#d9653f)"><div class="stack"><span class="kicker">Demuestra tu aprendizaje</span>
+      <h1>¿Cuánto sabes de verdad?</h1><p>Cada módulo tiene una lección corta con 3 preguntas y 3 vidas. Aprueba para desbloquear el siguiente. Cuando dominas todos los módulos de un curso, queda <b>verificado</b>.</p>
+      <div class="chips"><span class="chip">${ms.done} de ${ms.total} módulos dominados</span><span class="chip">${ms.verified} cursos verificados</span><span class="chip">${ms.xp} XP</span></div></div>
+    <div class="ava">${AV.svg(p.avatar, 190)}<span class="bubble">${ms.done ? "¡Sigue así!" : "¡Demuestra lo que sabes!"}</span></div></section>
+  <div class="cpick">${courses.map((x, i) => { const b = ms.byCourse[x.id]; return `<button type="button" class="cchip ${x.id === c.id ? "on" : ""}" data-course="${x.id}" style="--pct:${b.pct}">
+      <span class="ring"><span>${b.k === b.n ? "★" : b.pct + "%"}</span></span><span>${esc(x.name)}</span></button>`; }).join("")}</div>
+  <section class="pathbox ${col}">
+    <div class="pathhead"><span class="org">${esc(c.org)}</span><h2>${esc(c.name)}</h2><p class="muted" style="margin:0">${ms.byCourse[c.id].k} de ${mods.length} módulos dominados</p>
+      <div class="meter"><i style="width:${ms.byCourse[c.id].pct}%"></i></div></div>
+    <div class="path">${mods.map((_, i) => { const id = c.id + ":" + i, ok = ms.passed.has(id), pf = ms.perfect.has(id), open = i === 0 || ms.passed.has(c.id + ":" + (i - 1)), isNext = i === next;
+      const x = Math.round(Math.sin(i * 1.15) * 34);
+      return `<div class="pnode" style="--x:${x}%">${isNext ? `<span class="go">¡EMPIEZA!</span>` : ""}
+        <button type="button" class="pbtn ${ok ? "ok" : open ? "open" : "lock"} ${isNext ? "next" : ""}" data-lesson="${i}" ${open ? "" : "disabled"} aria-label="Módulo ${i + 1}: ${esc(c.modules[i])}">${ok ? (pf ? "★" : "✓") : open ? i + 1 : LOCK}</button>
+        <span class="plabel">${esc(c.modules[i])}${ok ? `<small>${pf ? "Perfecto" : "Dominado"} · repasar</small>` : ""}</span></div>`; }).join("")}
+      <div class="pnode" style="--x:0%"><span class="trophy ${ms.byCourse[c.id].k === mods.length ? "on" : ""}">${TROPHY}</span><span class="plabel">${ms.byCourse[c.id].k === mods.length ? "¡Curso verificado!" : "Verifica el curso"}</span></div></div>
+    <div class="row" style="justify-content:space-between">${ci > 0 ? `<button class="btn" data-course="${courses[ci - 1].id}" type="button">← ${esc(courses[ci - 1].name)}</button>` : "<span></span>"}
+      ${ci < courses.length - 1 ? `<button class="btn" data-course="${courses[ci + 1].id}" type="button">${esc(courses[ci + 1].name)} →</button>` : ""}</div>
+  </section>`;
+}
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const LS = {};
+function startLesson(courseId, mi) {
+  const qs = window.MASTERY[courseId][mi].map(([q, o, a, e]) => { const opts = shuffle(o.map((t, i) => ({ t, ok: i === a }))); return { q, opts, e, right: o[a], first: true }; });
+  Object.assign(LS, { courseId, mi, queue: shuffle(qs), idx: 0, hearts: 3, firstOk: 0, total: qs.length, sel: null, checked: false, combo: 0, done: false });
+  let ov = $("#lesson"); if (!ov) { ov = document.createElement("div"); ov.id = "lesson"; ov.className = "lesson"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true"); document.body.appendChild(ov); wireLesson(ov); }
+  ov.hidden = false; document.body.style.overflow = "hidden"; paintLesson();
+}
+function closeLesson() { const ov = $("#lesson"); if (ov) ov.hidden = true; document.body.style.overflow = ""; render(); }
+function paintLesson() {
+  const ov = $("#lesson"), c = window.COURSES.find(x => x.id === LS.courseId), me = meM();
+  const prog = Math.round(Math.min(LS.idx, LS.queue.length) / LS.queue.length * 100);
+  const top = `<div class="lstop"><button class="iconbtn" type="button" data-l="close" aria-label="Salir de la lección">✕</button><div class="meter lmeter"><i style="width:${prog}%"></i></div>
+    <div class="hearts" aria-label="${LS.hearts} vidas">${[0, 1, 2].map(i => HEART(i < LS.hearts)).join("")}</div></div>`;
+  if (LS.done) {
+    const win = LS.hearts > 0, perfect = win && LS.firstOk === LS.total, xp = win ? LS.firstOk * 10 + 5 + (perfect ? 5 : 0) : 0;
+    ov.innerHTML = `${top}<div class="lbody center pop"><div class="ava">${AV.svg(me.avatar, 170)}</div>
+      <h1>${win ? (perfect ? "¡Perfecto!" : "¡Módulo dominado!") : "Te quedaste sin vidas"}</h1>
+      <p class="muted">${esc(c.name)} · ${esc(c.modules[LS.mi])}</p>
+      <div class="lstats"><div class="tile" style="--t:var(--sun);--t-soft:var(--sun-soft)"><span>XP</span><b>+${xp}</b></div>
+        <div class="tile" style="--t:var(--mint);--t-soft:var(--mint-soft)"><span>Precisión</span><b>${Math.round(LS.firstOk / LS.total * 100)}%</b></div>
+        <div class="tile" style="--t:var(--rose);--t-soft:var(--rose-soft)"><span>Vidas</span><b>${LS.hearts}</b></div></div>
+      <p>${win ? "Demostraste que dominas este módulo." : "Repasa el módulo en el curso y vuelve a intentarlo. ¡Tú puedes!"}</p>
+      <div class="row" style="justify-content:center">${win ? `<button class="btn primary" type="button" data-l="close">Continuar</button>` : `<button class="btn" type="button" data-l="close">Salir</button><button class="btn primary" type="button" data-l="retry">Intentar de nuevo</button>`}</div></div>`;
+    return;
+  }
+  const q = LS.queue[LS.idx];
+  ov.innerHTML = `${top}<div class="lbody"><div class="lq"><div class="mascot">${AV.svg(me.avatar, 86)}<span class="say">${q.first ? (LS.combo >= 2 ? `¡${LS.combo} seguidas!` : "Tú puedes") : "Repasemos esta"}</span></div>
+      <div class="stack" style="gap:6px"><span class="kicker">${esc(c.modules[LS.mi])}</span><h2>${esc(q.q)}</h2></div></div>
+    <div class="lopts">${q.opts.map((o, i) => `<button type="button" class="lopt ${LS.sel === i ? "sel" : ""} ${LS.checked ? (o.ok ? "right" : LS.sel === i ? "wrong" : "") : ""}" data-opt="${i}" ${LS.checked ? "disabled" : ""}><kbd>${i + 1}</kbd>${esc(o.t)}</button>`).join("")}</div></div>
+  <div class="lfoot ${LS.checked ? (q.opts[LS.sel].ok ? "good" : "badf") : ""}"><div class="lfin">
+    ${LS.checked ? `<div class="stack" style="gap:4px"><h3>${q.opts[LS.sel].ok ? "¡Excelente!" : "Respuesta correcta: " + esc(q.right)}</h3><p style="margin:0">${esc(q.e)}</p></div><button class="btn ${q.opts[LS.sel].ok ? "mintb" : "roseb"}" type="button" data-l="next">Continuar</button>`
+      : `<span class="muted small">Elige una respuesta</span><button class="btn primary" type="button" data-l="check" ${LS.sel === null ? "disabled" : ""}>Comprobar</button>`}</div></div>`;
+}
+async function finishLesson() {
+  LS.done = true; const win = LS.hearts > 0, perfect = win && LS.firstOk === LS.total, xp = win ? LS.firstOk * 10 + 5 + (perfect ? 5 : 0) : 0;
+  paintLesson();
+  try {
+    const before = mastery(meM()).byCourse[LS.courseId];
+    await Store.addTraining({ member: S.me, activity: "exam", item_id: LS.courseId + ":" + LS.mi, score: LS.firstOk, max_score: LS.total, payload: { passed: win, xp, hearts: LS.hearts } });
+    await loadAll(); const after = mastery(meM()).byCourse[LS.courseId];
+    if (after.k === after.n && before.k < before.n) {
+      if (!S.statuses.find(s => s.member === S.me && s.course_id === LS.courseId && s.status === "completado")) { await Store.setStatus({ member: S.me, course_id: LS.courseId, status: "completado", completed_at: isoDate(new Date()) }); await loadAll(); }
+      toast("¡Curso verificado! Lo marcamos como completado");
+    }
+  } catch (err) { toast("No se pudo guardar el resultado: " + err.message); }
+}
+function lessonAction(act, i) {
+  if (LS.done) { if (act === "close") closeLesson(); if (act === "retry") startLesson(LS.courseId, LS.mi); return; }
+  const q = LS.queue[LS.idx];
+  if (act === "close") { closeLesson(); return; }
+  if (act === "opt" && !LS.checked) { LS.sel = i; paintLesson(); return; }
+  if (act === "check" && LS.sel !== null && !LS.checked) {
+    LS.checked = true; const ok = q.opts[LS.sel].ok;
+    if (ok) { LS.combo++; if (q.first) LS.firstOk++; } else { LS.combo = 0; LS.hearts--; LS.queue.push({ ...q, first: false, opts: shuffle(q.opts) }); }
+    paintLesson(); return;
+  }
+  if (act === "next" && LS.checked) {
+    if (LS.hearts <= 0) { finishLesson(); return; }
+    LS.idx++; LS.sel = null; LS.checked = false;
+    if (LS.idx >= LS.queue.length) { finishLesson(); return; }
+    paintLesson();
+  }
+}
+function wireLesson(ov) {
+  ov.addEventListener("click", e => { const o = e.target.closest("[data-opt]"); if (o) { lessonAction("opt", Number(o.dataset.opt)); return; } const b = e.target.closest("[data-l]"); if (b) lessonAction(b.dataset.l); });
+  document.addEventListener("keydown", e => {
+    if (ov.hidden) return;
+    if (e.key === "Escape") { lessonAction("close"); return; }
+    if (/^[1-4]$/.test(e.key) && !LS.done && LS.queue[LS.idx] && Number(e.key) <= LS.queue[LS.idx].opts.length) { lessonAction("opt", Number(e.key) - 1); return; }
+    if (e.key === "Enter") { e.preventDefault(); if (LS.done) return; lessonAction(LS.checked ? "next" : "check"); }
+  });
+}
+function wireDemuestra(v) {
+  v.addEventListener("click", e => {
+    const c = e.target.closest("[data-course]"); if (c) { DEM.course = c.dataset.course; render(); return; }
+    const l = e.target.closest("[data-lesson]"); if (l && !l.disabled) startLesson(DEM.course, Number(l.dataset.lesson));
+  });
+}
+
 // ---------------- Enrutador ----------------
-const VIEWS = { ruta: [viewRuta, wireRuta], registrar: [viewRegistrar, wireRegistrar], entrenar: [viewEntrenar, wireEntrenar], equipo: [viewEquipo, null],
+const VIEWS = { ruta: [viewRuta, wireRuta], demuestra: [viewDemuestra, wireDemuestra], registrar: [viewRegistrar, wireRegistrar], entrenar: [viewEntrenar, wireEntrenar], equipo: [viewEquipo, null],
   perfil: [viewPerfil, v => { ED.from = "perfil"; ED.step = 2; wireOnboard(v); ED.step = 1; }] };
 function mount(html, wire) { const old = $("#view"), v = old.cloneNode(false); old.replaceWith(v); v.innerHTML = html; if (wire) wire(v); }
 function render() {

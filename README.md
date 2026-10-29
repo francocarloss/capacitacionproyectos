@@ -13,6 +13,7 @@ Página publicada: https://francocarloss.github.io/capacitacionproyectos/
 ## Secciones
 
 - **Mi ruta:** el plan curso por curso, con fechas, horas y estado.
+- **Demuestra:** evaluación estilo Duolingo con una lección de 3 preguntas y 3 vidas por módulo. Al aprobarla se desbloquea el siguiente módulo. Cuando la persona domina todos los módulos de un curso, este queda **verificado** y se marca como completado. Las preguntas están en `mastery.js`.
 - **Registrar:** horas por curso, con nota y enlace de evidencia.
 - **Entrenamiento:** quiz, *Detecta la alucinación*, laboratorio de prompts, tarjetas y reto de la semana, con puntos e insignias.
 - **Equipo:** tablero de cumplimiento de las 5 personas.
