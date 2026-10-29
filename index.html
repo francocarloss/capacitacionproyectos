@@ -7,66 +7,30 @@
 <link rel="icon" href="assets/claude-color.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap">
 <link rel="stylesheet" href="styles.css">
+<script>try{const t=localStorage.getItem("ruta-ia:theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 </head>
 <body>
-<div id="demo" class="demo" hidden>Modo demostración: los datos se guardan solo en este navegador. Configura Supabase en <code>config.js</code> para compartirlos con el equipo.</div>
-
-<!-- Acceso -->
-<main id="v-login" class="screen" hidden>
-  <div class="login">
-    <img src="assets/claude-color.svg" alt="" class="login-logo">
-    <p class="eyebrow">Propuesta de Capacitación · Proyectos 2026–2027</p>
-    <h1>Ruta de Dominio IA</h1>
-    <p class="muted">Tu plan de estudios basado en Claude. Define tu reto semanal, registra tu avance y entrena.</p>
-    <form id="f-login" class="card stack">
-      <label for="login-email">Correo de trabajo</label>
-      <input id="login-email" type="email" required placeholder="nombre@empresa.com" autocomplete="email">
-      <button class="btn primary" type="submit">Enviarme el enlace de acceso</button>
-      <p id="login-msg" class="muted small" role="status"></p>
-    </form>
-    <form id="f-demo" class="card stack" hidden>
-      <label for="demo-name">¿Quién eres?</label>
-      <select id="demo-name"></select>
-      <button class="btn primary" type="submit">Entrar</button>
-    </form>
-  </div>
-</main>
-
-<!-- Primer ingreso: configurar el reto -->
-<main id="v-setup" class="screen" hidden>
-  <div class="wrap narrow">
-    <p class="eyebrow">Paso 1 de 1</p>
-    <h1>Configura tu reto</h1>
-    <p class="muted">Tú decides cuántas horas inviertes por semana. La página calcula cuándo terminas cada curso y te mide contra ese compromiso.</p>
-    <form id="f-setup" class="card stack"></form>
-  </div>
-</main>
-
-<!-- Aplicación -->
-<div id="v-app" hidden>
-  <header class="top">
-    <div class="wrap topin">
-      <a class="brand" href="#ruta"><img src="assets/claude-color.svg" alt=""><span>Ruta de Dominio IA</span></a>
-      <nav id="nav" aria-label="Secciones">
-        <a href="#ruta">Mi ruta</a>
-        <a href="#registrar">Registrar</a>
-        <a href="#entrenar">Entrenamiento</a>
-        <a href="#equipo">Equipo</a>
-        <a href="#reto">Mi reto</a>
-      </nav>
-      <div class="who"><span id="who-name"></span><button id="b-logout" class="btn ghost small" type="button">Salir</button></div>
+<header class="top">
+  <div class="wrap topin">
+    <a class="brand" href="#ruta"><img src="assets/claude-color.svg" alt=""><span>Ruta de Dominio <b>IA</b></span></a>
+    <nav id="nav" aria-label="Secciones" hidden>
+      <a href="#ruta">Mi ruta</a><a href="#registrar">Registrar</a><a href="#entrenar">Entrenamiento</a><a href="#equipo">Equipo</a><a href="#perfil">Mi perfil</a>
+    </nav>
+    <div class="tools">
+      <button id="b-theme" class="iconbtn" type="button" aria-label="Cambiar a modo noche"></button>
+      <button id="b-me" class="mechip" type="button" hidden></button>
     </div>
-  </header>
-  <main class="wrap" id="view"></main>
-  <footer class="wrap foot muted small">Horas marcadas con “est.” son estimadas: el proveedor no publica la duración exacta. Cursos gratuitos en Anthropic Academy y n8n Academy.</footer>
-</div>
+  </div>
+</header>
+<main class="wrap" id="view"></main>
 <div id="toast" class="toast" role="status" hidden></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
 <script src="data.js"></script>
+<script src="avatar.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

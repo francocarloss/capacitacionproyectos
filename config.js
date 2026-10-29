@@ -1,8 +1,7 @@
-// Datos de conexión a Supabase (Project Settings > API).
-// La "anon public key" es segura en el navegador: las reglas de seguridad (RLS) del esquema protegen los datos.
-// NUNCA pongas aquí la "service_role key".
-// Si se dejan vacíos, la página funciona en modo demostración (los datos se guardan solo en este navegador).
+// Conexión a Supabase (proyecto capacitacion-proyectos).
+// La clave publicable es segura en el navegador: las reglas de la base de datos (RLS) limitan lo que se puede hacer.
+// NUNCA pongas aquí la clave secreta (service_role).
 window.RUTA_CONFIG = {
-  SUPABASE_URL: "",
-  SUPABASE_ANON_KEY: ""
+  SUPABASE_URL: "https://adkfyxfpsykcscdiotjd.supabase.co",
+  SUPABASE_KEY: "sb_publishable_gU_Fz3i18mybXoNp_8h91w_hDxzAm6Q"
 };
