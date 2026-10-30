@@ -28,7 +28,7 @@ Responsable: SISO (`.claude/agents/siso.md`). Este documento resume las amenazas
   - **H-03 (bajo):** la base de datos no saneaba el nombre ni el avatar.
   - **H-04 (bajo):** no se podía borrar la práctica propia.
 
-  H-01, H-03 y H-04 se corrigen con la primera sección de `supabase/7_multi_ia.sql` (reemplaza a `6_endurecimiento_siso.sql`) y con el tope de puntos en `js/state.js`. **Pendiente:** esa sección borra filas inválidas, así que debe ejecutarse desde el SQL Editor; la parte multi-IA ya está aplicada. H-02 queda en el roadmap: ampliar el banco a 6 o más preguntas por módulo.
+  H-01, H-03 y H-04 se corrigen con la primera sección de `supabase/7_multi_ia.sql` (reemplaza a `6_endurecimiento_siso.sql`) y con el tope de puntos en `js/state.js`. **Aplicado** en producción sin borrar filas: la única fila con puntos de más quedó con el máximo permitido. H-02 queda en el roadmap: ampliar el banco a 6 o más preguntas por módulo.
 - **QA de punta a punta (v3):** sin defectos bloqueantes ni altos. Se corrigieron:
   - desplazamiento horizontal de Demuestra en celular;
   - foco atrapado dentro de la lección;
