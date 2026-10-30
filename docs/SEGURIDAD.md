@@ -44,7 +44,7 @@ Responsable: SISO (`.claude/agents/siso.md`). Este documento resume las amenazas
   - lecciones de cursos fuera de la ruta;
   - nombres con `<` o `>` al registrarse.
 
-  También se rotaron 2 preguntas que coincidían con el historial público. Queda pendiente igualar la longitud de las opciones: hoy la respuesta correcta suele ser la más larga.
+  También se rotaron 2 preguntas que coincidían con el historial público. Además se reescribieron los distractores de las 279 preguntas de opción múltiple: la correcta pasó de ser la opción más larga en ~92% a 21%. También se repartió su posición, que ahora queda 64/77/64/74 entre las opciones 0 a 3.
 
 ## Pendientes de configuración (panel de Supabase, Authentication)
 
