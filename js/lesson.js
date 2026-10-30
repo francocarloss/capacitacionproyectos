@@ -1,7 +1,7 @@
 // "Demuestra tu aprendizaje": ruta de módulos estilo Duolingo y lección calificada en el servidor.
 import { Api } from "./api.js";
 import { AV } from "./avatar.js";
-import { S, ctx, COLORS, planFor, mastery, loadAll } from "./state.js";
+import { S, ctx, COLORS, AIS, aiName, aisFor, planFor, mastery, loadAll } from "./state.js";
 import { $, esc, shuffle, toast, niceError } from "./util.js";
 
 export const DEM = { course: null };
@@ -11,8 +11,9 @@ const HEART = on => `<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden
 export const BADGE = (color, label) => `<span class="cbadge" style="--b:${color}"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="6"/><path d="M8.5 14 7 22l5-3 5 3-1.5-8"/></svg>${esc(label)}</span>`;
 
 export function viewDemuestra() {
-  const p = S.profile, ms = mastery(p), courses = planFor(p).filter(c => ms.byCourse[c.id]);
-  if (!DEM.course || !courses.find(c => c.id === DEM.course)) DEM.course = (courses.find(c => !ms.byCourse[c.id].verified) || courses[0]).id;
+  const p = S.profile, ms = mastery(p), courses = planFor(p).filter(c => ms.byCourse[c.id]), multi = aisFor(p).length > 1;
+  const tag = ai => `<span class="aitag" style="--ai:${(AIS[ai] || { c: "var(--muted)" }).c}">${esc(aiName(ai))}</span>`;
+  if (!DEM.course || !courses.find(c => c.id === DEM.course)) DEM.course = (courses.find(c => ms.byCourse[c.id].k && !ms.byCourse[c.id].verified) || courses.find(c => !ms.byCourse[c.id].verified) || courses[0]).id;
   const ci = courses.findIndex(c => c.id === DEM.course), c = courses[ci], b = ms.byCourse[c.id];
   const col = COLORS[planFor(p).findIndex(x => x.id === c.id) % COLORS.length];
   const next = c.modules.findIndex((_, i) => !ms.passed.has(c.id + ":" + i));
@@ -21,9 +22,9 @@ export function viewDemuestra() {
       <div class="chips"><span class="chip">${ms.done} de ${ms.total} módulos</span><span class="chip">${ms.verified.length} insignias</span><span class="chip">${ms.xp} XP</span></div></div>
     <div class="ava">${AV.svg(p.avatar, 190)}<span class="bubble">${ms.done ? "¡Sigue así!" : "¡Demuestra lo que sabes!"}</span></div></section>
   <div class="cpick" role="tablist" aria-label="Cursos">${courses.map(x => { const v = ms.byCourse[x.id]; return `<button type="button" role="tab" aria-selected="${x.id === c.id}" class="cchip ${x.id === c.id ? "on" : ""}" data-course="${x.id}" style="--pct:${v.pct}">
-      <span class="ring"><span>${v.verified ? "★" : v.pct + "%"}</span></span><span>${esc(x.name)}</span></button>`; }).join("")}</div>
+      <span class="ring"><span>${v.verified ? "★" : v.pct + "%"}</span></span><span>${multi && x.ai !== "comun" ? `<small class="cai" style="--ai:${AIS[x.ai].c}">${esc(aiName(x.ai))}</small>` : ""}${esc(x.name)}</span></button>`; }).join("")}</div>
   <section class="pathbox ${col}">
-    <div class="pathhead"><span class="org">${esc(c.org)}</span><h2>${esc(c.name)}</h2><p class="muted" style="margin:0">${b.k} de ${b.n} módulos dominados</p><div class="meter"><i style="width:${b.pct}%"></i></div></div>
+    <div class="pathhead"><span class="org">${tag(c.ai)} ${esc(c.org)}</span><h2>${esc(c.name)}</h2><p class="muted" style="margin:0">${b.k} de ${b.n} módulos dominados</p><div class="meter"><i style="width:${b.pct}%"></i></div></div>
     <div class="path">${c.modules.map((name, i) => { const id = c.id + ":" + i, ok = ms.passed.has(id), pf = ms.perfect.has(id), open = i === 0 || ms.passed.has(c.id + ":" + (i - 1)), isNext = i === next;
       return `<div class="pnode" style="--x:${Math.round(Math.sin(i * 1.15) * 26)}%">${isNext ? `<span class="go">¡EMPIEZA!</span>` : ""}
         <button type="button" class="pbtn ${ok ? "ok" : open ? "open" : "lock"} ${isNext ? "next" : ""}" data-lesson="${i}" ${open ? "" : "disabled"} aria-label="Módulo ${i + 1}: ${esc(name)}${ok ? " (dominado)" : open ? "" : " (bloqueado)"}">${ok ? (pf ? "★" : "✓") : open ? i + 1 : LOCK}</button>

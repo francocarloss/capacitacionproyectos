@@ -1,6 +1,6 @@
 // Estado de la aplicación y cálculos derivados (plan, cumplimiento, dominio, puntos, insignias).
 import { Api } from "./api.js";
-import { COURSES, QUIZ, HALLU } from "./catalog.js";
+import { QUIZ, HALLU } from "./catalog.js";
 import { DAY, parseDate, fmtDate } from "./util.js";
 
 export const S = { user: null, profile: null, courses: [], profiles: [], mastery: [], training: [], team: null, members: [] };
@@ -15,13 +15,26 @@ export async function loadAll() {
   S.profile = profiles.find(p => p.id === S.user.id) || S.profile;
 }
 
-const meta = id => COURSES.find(c => c.id === id) || { name: id, org: "", modules: [], learn: "", detail: "", url: "" };
-// Plan = cursos de la base de datos (horas oficiales) + datos de presentación del catálogo
-export function planFor(p) {
-  const track = p.profile_type === "tecnico" ? "tecnico" : "general";
-  return S.courses.filter(c => c.track === "todos" || c.track === track)
-    .map(c => ({ ...meta(c.id), id: c.id, name: c.name, hours: Number(c.hours) }));
+// IAs que puede elegir un equipo y competencias que permiten comparar cursos entre IAs
+export const AIS = { claude: { name: "Claude", c: "#d97757" }, chatgpt: { name: "ChatGPT", c: "#10a37f" }, copilot: { name: "Copilot", c: "#3b8cf0" }, gemini: { name: "Gemini", c: "#8b5cf6" } };
+export const TOPICS = { fundamentos: "Fundamentos", criterio: "Criterio y uso responsable", colaboracion: "Colaboración", negocio: "Negocio", avanzado: "Avanzado (técnico)", proyecto: "Proyecto de área", automatizacion: "Automatización", certificacion: "Certificación" };
+const TOPIC_ORDER = Object.keys(TOPICS);
+export const aiName = ai => (AIS[ai] || { name: "Común" }).name;
+// El equipo decide las IAs; sin equipo, cada persona en su perfil
+export function aisFor(p) {
+  const list = S.team && (!p.id || S.members.some(m => m.user_id === p.id)) ? S.team.ais : p.ais; // sin id = vista previa propia
+  const set = list && list.length ? list : ["claude"];
+  return Object.keys(AIS).filter(a => set.includes(a));
 }
+// Plan = cursos de las IAs elegidas + comunes, ordenados por competencia para avanzar en paralelo
+export function planFor(p) {
+  const track = p.profile_type === "tecnico" ? "tecnico" : "general", ais = aisFor(p);
+  return S.courses.filter(c => (c.track === "todos" || c.track === track) && (c.ai === "comun" || ais.includes(c.ai)))
+    .sort((a, b) => TOPIC_ORDER.indexOf(a.topic) - TOPIC_ORDER.indexOf(b.topic) || ais.indexOf(a.ai) - ais.indexOf(b.ai) || a.sort - b.sort)
+    .map(c => ({ ...c, hours: Number(c.hours), modules: c.modules || [] }));
+}
+// Cursos equivalentes: misma competencia, otra IA
+export const equivalents = (c, plan) => c.ai === "comun" ? [] : plan.filter(x => x.topic === c.topic && x.ai !== c.ai && x.ai !== "comun");
 export function schedule(p) {
   const H = Number(p.hours_per_week) || 1, start = parseDate(p.start_date); let cum = 0;
   return planFor(p).map(c => { const a = cum; cum += c.hours;

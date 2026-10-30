@@ -8,6 +8,7 @@ Responsable: SISO (`.claude/agents/siso.md`). Este documento resume las amenazas
 |---|---|
 | Ver las respuestas de Demuestra | La tabla `questions` no tiene políticas RLS, así que nadie la lee desde la web. `start_lesson` envía preguntas sin respuesta y `check_answer` revela la respuesta solo después de contestar. |
 | Falsear dominio u horas | La calificación, las vidas, el desbloqueo y las horas viven en `lesson_sessions` y `module_mastery`, que solo se escriben mediante RPC. Repetir el cierre de una lección no duplica horas. |
+| Elegir IAs del equipo | Solo quien administra el equipo puede cambiarlas, mediante `set_team_ais`, que valida la lista con `valid_ais()`. |
 | Saltar módulos | `start_lesson` exige haber aprobado el módulo anterior. |
 | Ver datos de otros equipos | Las políticas RLS usan `is_teammate()`: solo ves lo tuyo y lo de tu equipo. |
 | Editar a otros o escalar privilegios | `profiles` solo permite actualizar tu fila y columnas concretas. Equipos y membresías solo cambian mediante RPC con validaciones. |
@@ -27,7 +28,7 @@ Responsable: SISO (`.claude/agents/siso.md`). Este documento resume las amenazas
   - **H-03 (bajo):** la base de datos no saneaba el nombre ni el avatar.
   - **H-04 (bajo):** no se podía borrar la práctica propia.
 
-  H-01, H-03 y H-04 se corrigen con `supabase/6_endurecimiento_siso.sql` y con el tope de puntos en `js/state.js`. H-02 queda en el roadmap: ampliar el banco a 6 o más preguntas por módulo.
+  H-01, H-03 y H-04 se corrigen con la primera sección de `supabase/7_multi_ia.sql` (reemplaza a `6_endurecimiento_siso.sql`) y con el tope de puntos en `js/state.js`. **Pendiente:** esa sección borra filas inválidas, así que debe ejecutarse desde el SQL Editor; la parte multi-IA ya está aplicada. H-02 queda en el roadmap: ampliar el banco a 6 o más preguntas por módulo.
 - **QA de punta a punta (v3):** sin defectos bloqueantes ni altos. Se corrigieron:
   - desplazamiento horizontal de Demuestra en celular;
   - foco atrapado dentro de la lección;

@@ -247,3 +247,15 @@ td.num,th.num{text-align:right; font-variant-numeric:tabular-nums}
 .code{font-family:ui-monospace, Menlo, monospace; letter-spacing:.12em}
 .cbadge{display:inline-flex; align-items:center; gap:8px; font-weight:800; font-size:14px; padding:8px 14px 8px 10px; border-radius:999px; color:#fff; background:var(--b); box-shadow:0 6px 14px color-mix(in srgb, var(--b) 35%, transparent)}
 #view:focus{outline:none}
+
+/* ---------- Varias IAs ---------- */
+.aitag{display:inline-flex; align-items:center; gap:5px; font:800 12px var(--body); padding:3px 10px; border-radius:999px; color:var(--ai); background:color-mix(in srgb, var(--ai) 14%, transparent); white-space:nowrap; vertical-align:middle}
+.aitag::before{content:""; width:8px; height:8px; border-radius:50%; background:var(--ai)}
+.cai{display:block; font-size:11px; color:var(--ai)}
+.aipick{display:flex; flex-wrap:wrap; gap:10px}
+.aipick label{display:inline-flex; align-items:center; gap:8px; cursor:pointer; border:2px solid var(--line); border-radius:999px; padding:8px 14px; font-weight:800; background:var(--surface)}
+.aipick label:has(input:checked){border-color:var(--ai); background:color-mix(in srgb, var(--ai) 12%, var(--surface))}
+.aipick input{accent-color:var(--ai); width:18px; height:18px; margin:0}
+.lbl-t{font-weight:800}
+.eqt{min-width:560px} .eqt th[scope=row]{text-align:left; white-space:nowrap}
+.eqt td{vertical-align:top} .eqc{display:flex; flex-direction:column; gap:2px; margin-bottom:8px}
