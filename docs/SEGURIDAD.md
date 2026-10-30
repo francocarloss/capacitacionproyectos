@@ -58,3 +58,7 @@ Responsable: SISO (`.claude/agents/siso.md`). Este documento resume las amenazas
 - Las preguntas originales estuvieron en el historial público de Git (versión anterior). **Mitigación:** ampliar y rotar el banco de preguntas, y migrar a un repositorio privado al pasar a Netlify.
 - Las prácticas de Entrenamiento se califican en el navegador. Solo dan puntos, no dominio ni horas.
 - GitHub Pages no permite cabeceras HTTP propias. La CSP va como `<meta>`; la protección contra iframes se completa en Netlify.
+
+## Cuentas de prueba (QA)
+
+`qa.uno@ruta-ia.test` y `qa.dos@ruta-ia.test` están **desactivadas**: tienen bloqueo de 100 años y una contraseña aleatoria que nadie conoce. Para borrarlas del todo, ejecutar `supabase/5_borrar_cuentas_qa.sql` en el SQL Editor; requiere aprobación porque elimina filas.
