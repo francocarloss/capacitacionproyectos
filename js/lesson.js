@@ -25,7 +25,7 @@ export function viewDemuestra() {
   <section class="pathbox ${col}">
     <div class="pathhead"><span class="org">${esc(c.org)}</span><h2>${esc(c.name)}</h2><p class="muted" style="margin:0">${b.k} de ${b.n} módulos dominados</p><div class="meter"><i style="width:${b.pct}%"></i></div></div>
     <div class="path">${c.modules.map((name, i) => { const id = c.id + ":" + i, ok = ms.passed.has(id), pf = ms.perfect.has(id), open = i === 0 || ms.passed.has(c.id + ":" + (i - 1)), isNext = i === next;
-      return `<div class="pnode" style="--x:${Math.round(Math.sin(i * 1.15) * 34)}%">${isNext ? `<span class="go">¡EMPIEZA!</span>` : ""}
+      return `<div class="pnode" style="--x:${Math.round(Math.sin(i * 1.15) * 26)}%">${isNext ? `<span class="go">¡EMPIEZA!</span>` : ""}
         <button type="button" class="pbtn ${ok ? "ok" : open ? "open" : "lock"} ${isNext ? "next" : ""}" data-lesson="${i}" ${open ? "" : "disabled"} aria-label="Módulo ${i + 1}: ${esc(name)}${ok ? " (dominado)" : open ? "" : " (bloqueado)"}">${ok ? (pf ? "★" : "✓") : open ? i + 1 : LOCK}</button>
         <span class="plabel">${esc(name)}${ok ? `<small>${pf ? "Perfecto" : "Dominado"} · repasar</small>` : ""}</span></div>`; }).join("")}
       <div class="pnode" style="--x:0%"><span class="trophy ${b.verified ? "on" : ""}">${TROPHY}</span><span class="plabel">${b.verified ? "¡Insignia ganada!" : "Gana la insignia del curso"}</span></div></div>
@@ -60,6 +60,10 @@ function overlay() {
   return ov;
 }
 function close() { const ov = $("#lesson"); if (ov) ov.hidden = true; document.body.style.overflow = ""; ctx.render(); }
+function focusIn(ov) {
+  if (ov.contains(document.activeElement)) return;
+  const f = ov.querySelector("button:not([disabled]), [href], input, textarea"); if (f) f.focus({ preventScroll: true });
+}
 function paint() {
   const ov = $("#lesson"), c = planFor(S.profile).find(x => x.id === L.courseId), me = S.profile;
   const prog = Math.round(Math.min(L.idx, L.queue.length) / L.queue.length * 100);
@@ -76,6 +80,7 @@ function paint() {
       <p>${win ? (Number(d.hours) > 0 ? "Se sumaron automáticamente a tu reto las horas de estudio de este módulo." : "Repasaste un módulo que ya dominabas.") : "Repasa el módulo en el curso y vuelve a intentarlo. ¡Tú puedes!"}</p>
       ${L.newBadge ? `<div class="explain pop">Ganaste la insignia <b>${esc(c.name)}</b>. ¡Demostraste que dominas el curso!</div>` : ""}
       <div class="row" style="justify-content:center">${win ? `<button class="btn primary" type="button" data-l="close">Continuar</button>` : `<button class="btn" type="button" data-l="close">Salir</button><button class="btn primary" type="button" data-l="retry">Intentar de nuevo</button>`}</div></div>`;
+    ov.querySelector(".lbody .btn.primary").focus({ preventScroll: true });
     return;
   }
   const q = L.queue[L.idx], fb = L.fb;
@@ -85,6 +90,9 @@ function paint() {
   <div class="lfoot ${fb ? (fb.correct ? "good" : "badf") : ""}"><div class="lfin">
     ${fb ? `<div class="stack" style="gap:4px"><h3>${fb.correct ? "¡Excelente!" : "Respuesta correcta: " + esc((q.opts.find(o => o.i === fb.answer_idx) || {}).t)}</h3><p style="margin:0">${esc(fb.explanation)}</p></div><button class="btn ${fb.correct ? "mintb" : "roseb"}" type="button" data-l="next">Continuar</button>`
       : `<span class="muted small">Elige una respuesta</span><button class="btn primary" type="button" data-l="check" ${L.sel === null || L.busy ? "disabled" : ""}>${L.busy ? "Revisando…" : "Comprobar"}</button>`}</div></div>`;
+  if (fb) ov.querySelector("[data-l='next']").focus({ preventScroll: true });
+  else if (L.sel !== null) { const s = ov.querySelector(`[data-opt="${L.sel}"]`); if (s) s.focus({ preventScroll: true }); }
+  else focusIn(ov);
 }
 async function check() {
   if (L.sel === null || L.fb || L.busy) return;
@@ -104,6 +112,7 @@ async function next() {
 }
 async function finish() {
   L.busy = true;
+  $("#lesson").querySelector(".lbody").innerHTML = `<div class="center stack"><p class="muted">Calculando tu resultado…</p></div>`;
   try {
     const before = mastery(S.profile).byCourse[L.courseId];
     L.done = await Api.finishLesson(L.session);
@@ -123,6 +132,14 @@ function wire(ov) {
   document.addEventListener("keydown", e => {
     if (ov.hidden) return;
     if (e.key === "Escape") { close(); return; }
+    if (e.key === "Tab") { // mantener el foco dentro del diálogo
+      const f = [...ov.querySelectorAll("button:not([disabled]), [href], input, textarea")]; if (!f.length) return;
+      const first = f[0], last = f[f.length - 1];
+      if (!ov.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+      else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      return;
+    }
     if (L.done || !L.queue) return;
     const q = L.queue[L.idx];
     if (/^[1-6]$/.test(e.key) && q && !L.fb && Number(e.key) <= q.opts.length) { L.sel = Number(e.key) - 1; paint(); return; }

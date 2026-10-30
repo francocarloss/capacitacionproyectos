@@ -197,7 +197,7 @@ td.num,th.num{text-align:right; font-variant-numeric:tabular-nums}
 .cchip.on{border-color:var(--claude)}
 .cchip .ring{width:42px; height:42px; border-radius:50%; flex:none; display:grid; place-items:center; background:conic-gradient(var(--mint) calc(var(--pct) * 1%), var(--soft) 0)}
 .cchip .ring span{width:32px; height:32px; border-radius:50%; background:var(--surface); display:grid; place-items:center; font-size:11px; font-weight:800}
-.pathbox{border-radius:36px; background:var(--c-soft); padding:clamp(20px,4vw,36px); display:grid; gap:22px}
+.pathbox{border-radius:36px; background:var(--c-soft); padding:clamp(20px,4vw,36px); display:grid; gap:22px; overflow:hidden}
 .pathhead{display:grid; gap:8px; max-width:560px}
 .pathhead .org{font-weight:800; font-size:13px; color:var(--c)}
 .pathhead .meter{background:var(--surface)} .pathhead .meter i{background:var(--c)}

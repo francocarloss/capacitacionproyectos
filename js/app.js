@@ -241,8 +241,8 @@ async function start() {
 Auth.onChange((event, session) => {
   if (event === "PASSWORD_RECOVERY") { AU.recovery = true; S.user = session?.user || null; render(); return; }
   if (event === "SIGNED_IN" && (!S.user || S.user.id !== session.user.id)) start();
-  if (event === "SIGNED_OUT") { S.user = null; S.profile = null; Object.assign(S, { profiles: [], mastery: [], training: [], team: null, members: [] }); render(); }
+  if (event === "SIGNED_OUT") { history.replaceState(null, "", location.pathname); AU.tab = "in"; S.user = null; S.profile = null; Object.assign(S, { profiles: [], mastery: [], training: [], team: null, members: [] }); render(); }
 });
-window.addEventListener("hashchange", () => { if (S.profile && S.profile.configured) { render(); window.scrollTo(0, 0); } });
+window.addEventListener("hashchange", () => { if (S.profile && S.profile.configured) { render(); window.scrollTo(0, 0); $("#view").focus({ preventScroll: true }); } });
 $("#b-me").addEventListener("click", () => { location.hash = "#perfil"; });
 start();

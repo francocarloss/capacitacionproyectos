@@ -21,7 +21,19 @@ Responsable: SISO (`.claude/agents/siso.md`). Este documento resume las amenazas
 ## Pruebas
 
 - `supabase/3_prueba_seguridad.sql`: 26 casos. **Resultado: 26 de 26 pasan.**
-- Pruebas en el navegador con las cuentas de QA: ver el reporte de QA en la conversación del proyecto.
+- **Auditoría del SISO (v3):** se verificaron 13 controles. Hubo 4 hallazgos:
+  - **H-01 (medio):** se podían inflar los puntos de práctica.
+  - **H-02 (bajo):** las respuestas de un módulo se pueden descubrir sacrificando vidas, porque cada módulo tiene un banco fijo de 3 preguntas.
+  - **H-03 (bajo):** la base de datos no saneaba el nombre ni el avatar.
+  - **H-04 (bajo):** no se podía borrar la práctica propia.
+
+  H-01, H-03 y H-04 se corrigen con `supabase/6_endurecimiento_siso.sql` y con el tope de puntos en `js/state.js`. H-02 queda en el roadmap: ampliar el banco a 6 o más preguntas por módulo.
+- **QA de punta a punta (v3):** sin defectos bloqueantes ni altos. Se corrigieron:
+  - desplazamiento horizontal de Demuestra en celular;
+  - foco atrapado dentro de la lección;
+  - indicador mientras se calcula el resultado;
+  - foco al cambiar de vista;
+  - limpieza de la dirección al cerrar sesión.
 
 ## Pendientes de configuración (panel de Supabase, Authentication)
 

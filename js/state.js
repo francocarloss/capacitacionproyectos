@@ -61,9 +61,10 @@ export function metrics(p) {
 export function training(p) {
   const t = S.training.filter(x => x.user_id === p.id);
   const best = act => { const m = {}; t.filter(x => x.activity === act).forEach(x => { if (!m[x.item_id] || x.score > m[x.item_id].score) m[x.item_id] = x; }); return Object.values(m); };
-  const quiz = best("quiz"), hallu = best("hallu"), prompt = best("prompt"), challenges = t.filter(x => x.activity === "challenge");
-  const quizScore = quiz.reduce((a, x) => a + x.score, 0);
-  const practice = quizScore * 10 + hallu.reduce((a, x) => a + x.score, 0) * 15 + prompt.reduce((a, x) => a + x.score, 0) * 5 + challenges.length * 30;
+  const quiz = best("quiz"), hallu = best("hallu"), prompt = best("prompt"), challenges = [...new Map(t.filter(x => x.activity === "challenge").map(x => [x.item_id, x])).values()];
+  const quizScore = quiz.reduce((a, x) => a + Math.min(x.score, x.max_score), 0);
+  const cap = x => Math.min(x.score, x.max_score);
+  const practice = quiz.reduce((a, x) => a + cap(x), 0) * 10 + hallu.reduce((a, x) => a + cap(x), 0) * 15 + prompt.reduce((a, x) => a + cap(x), 0) * 5 + challenges.length * 30;
   return { quiz, hallu, prompt, quizScore, challenges, points: practice + mastery(p).xp };
 }
 
