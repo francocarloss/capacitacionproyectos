@@ -249,13 +249,15 @@ td.num,th.num{text-align:right; font-variant-numeric:tabular-nums}
 #view:focus{outline:none}
 
 /* ---------- Varias IAs ---------- */
-.aitag{display:inline-flex; align-items:center; gap:5px; font:800 12px var(--body); padding:3px 10px; border-radius:999px; color:var(--ai); background:color-mix(in srgb, var(--ai) 14%, transparent); white-space:nowrap; vertical-align:middle}
+.aitag{display:inline-flex; align-items:center; gap:5px; font:800 12px var(--body); padding:3px 10px; border-radius:999px; color:color-mix(in srgb, var(--ai) 45%, var(--ink)); background:color-mix(in srgb, var(--ai) 12%, var(--surface)); white-space:nowrap; vertical-align:middle; text-transform:none; letter-spacing:0}
 .aitag::before{content:""; width:8px; height:8px; border-radius:50%; background:var(--ai)}
-.cai{display:block; font-size:11px; color:var(--ai)}
+.cai{display:block; font-size:11px; color:color-mix(in srgb, var(--ai) 45%, var(--ink))}
 .aipick{display:flex; flex-wrap:wrap; gap:10px}
 .aipick label{display:inline-flex; align-items:center; gap:8px; cursor:pointer; border:2px solid var(--line); border-radius:999px; padding:8px 14px; font-weight:800; background:var(--surface)}
 .aipick label:has(input:checked){border-color:var(--ai); background:color-mix(in srgb, var(--ai) 12%, var(--surface))}
 .aipick input{accent-color:var(--ai); width:18px; height:18px; margin:0}
+.aipick label:has(input:focus-visible){outline:3px solid var(--ai); outline-offset:3px}
+th.nt{text-transform:none; letter-spacing:0}
 .lbl-t{font-weight:800}
-.eqt{min-width:560px} .eqt th[scope=row]{text-align:left; white-space:nowrap}
+.eqt{min-width:520px} .eqt th[scope=row]{text-align:left; width:130px; min-width:110px}
 .eqt td{vertical-align:top} .eqc{display:flex; flex-direction:column; gap:2px; margin-bottom:8px}

@@ -19,6 +19,7 @@ export async function loadAll() {
 export const AIS = { claude: { name: "Claude", c: "#d97757" }, chatgpt: { name: "ChatGPT", c: "#10a37f" }, copilot: { name: "Copilot", c: "#3b8cf0" }, gemini: { name: "Gemini", c: "#8b5cf6" } };
 export const TOPICS = { fundamentos: "Fundamentos", criterio: "Criterio y uso responsable", colaboracion: "Colaboración", negocio: "Negocio", avanzado: "Avanzado (técnico)", proyecto: "Proyecto de área", automatizacion: "Automatización", certificacion: "Certificación" };
 const TOPIC_ORDER = Object.keys(TOPICS);
+export const aiColor = ai => ({ claude: "c-claude", chatgpt: "c-mint", copilot: "c-sky", gemini: "c-violet" })[ai] || "c-sun";
 export const aiName = ai => (AIS[ai] || { name: "Común" }).name;
 // El equipo decide las IAs; sin equipo, cada persona en su perfil
 export function aisFor(p) {

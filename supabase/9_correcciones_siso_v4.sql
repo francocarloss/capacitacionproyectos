@@ -65,6 +65,31 @@ end $$;
 revoke all on function public.check_answer(uuid, bigint, int), public.finish_lesson(uuid) from public, anon;
 grant execute on function public.check_answer(uuid, bigint, int), public.finish_lesson(uuid) to authenticated;
 
+-- H-v4-04 / QA D8: solo se pueden iniciar lecciones de cursos de las IAs de tu ruta
+create or replace function public.start_lesson(p_course text, p_module int) returns jsonb
+language plpgsql security definer set search_path = public, pg_temp as
+$$ declare v_id uuid; v_total int; v_qs jsonb; v_ais text[];
+begin
+  if auth.uid() is null then raise exception 'No autenticado'; end if;
+  if not exists (select 1 from courses where id = p_course) then raise exception 'Curso no válido'; end if;
+  select coalesce((select t.ais from teams t where t.id = public.my_team_id()), p.ais) into v_ais from profiles p where p.id = auth.uid();
+  if not exists (select 1 from courses c where c.id = p_course and (c.ai = 'comun' or c.ai = any(v_ais))) then
+    raise exception 'Este curso no está en tu ruta'; end if;
+  select count(*) into v_total from questions where course_id = p_course and module_idx = p_module;
+  if v_total = 0 then raise exception 'Módulo no válido'; end if;
+  if p_module > 0 and not exists (select 1 from module_mastery where user_id = auth.uid() and course_id = p_course and module_idx = p_module - 1) then
+    raise exception 'Primero aprueba el módulo anterior'; end if;
+  if (select count(*) from lesson_sessions where user_id = auth.uid() and created_at > now() - interval '1 hour') >= 60 then
+    raise exception 'Demasiados intentos. Descansa un momento y vuelve a intentarlo'; end if;
+  update lesson_sessions set status = 'failed', finished_at = now() where user_id = auth.uid() and status = 'active';
+  insert into lesson_sessions (user_id, course_id, module_idx, total) values (auth.uid(), p_course, p_module, v_total) returning id into v_id;
+  select jsonb_agg(jsonb_build_object('id', id, 'prompt', prompt, 'options', options) order by random()) into v_qs
+    from questions where course_id = p_course and module_idx = p_module;
+  return jsonb_build_object('session_id', v_id, 'questions', v_qs, 'hearts', 3);
+end $$;
+revoke all on function public.start_lesson(text, int) from public, anon;
+grant execute on function public.start_lesson(text, int) to authenticated;
+
 -- H-v4-05: sin IAs repetidas (primero se normalizan los datos)
 update public.profiles set ais = (select array_agg(distinct x order by x) from unnest(ais) x)
   where cardinality(ais) <> (select count(distinct x) from unnest(ais) x);

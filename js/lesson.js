@@ -1,7 +1,7 @@
 // "Demuestra tu aprendizaje": ruta de módulos estilo Duolingo y lección calificada en el servidor.
 import { Api } from "./api.js";
 import { AV } from "./avatar.js";
-import { S, ctx, COLORS, AIS, aiName, aisFor, planFor, mastery, loadAll } from "./state.js";
+import { S, ctx, AIS, aiColor, aiName, aisFor, planFor, mastery, loadAll } from "./state.js";
 import { $, esc, shuffle, toast, niceError } from "./util.js";
 
 export const DEM = { course: null };
@@ -15,7 +15,7 @@ export function viewDemuestra() {
   const tag = ai => `<span class="aitag" style="--ai:${(AIS[ai] || { c: "var(--muted)" }).c}">${esc(aiName(ai))}</span>`;
   if (!DEM.course || !courses.find(c => c.id === DEM.course)) DEM.course = (courses.find(c => ms.byCourse[c.id].k && !ms.byCourse[c.id].verified) || courses.find(c => !ms.byCourse[c.id].verified) || courses[0]).id;
   const ci = courses.findIndex(c => c.id === DEM.course), c = courses[ci], b = ms.byCourse[c.id];
-  const col = COLORS[planFor(p).findIndex(x => x.id === c.id) % COLORS.length];
+  const col = aiColor(c.ai);
   const next = c.modules.findIndex((_, i) => !ms.passed.has(c.id + ":" + i));
   return `<section class="banner" style="background:linear-gradient(135deg,#ff9a5c,#d9653f)"><div class="stack"><span class="kicker">Demuestra tu aprendizaje</span>
       <h1>¿Cuánto sabes de verdad?</h1><p>Cada módulo es una lección de 3 preguntas con 3 vidas, calificada en el servidor. Para aprobar, acierta al menos 2 a la primera. Al aprobarla sumas las horas de estudio de ese módulo. Domina todos los módulos de un curso y ganas su <b>insignia</b>.</p>
@@ -66,7 +66,7 @@ function focusIn(ov) {
   const f = ov.querySelector("button:not([disabled]), [href], input, textarea"); if (f) f.focus({ preventScroll: true });
 }
 function paint() {
-  const ov = $("#lesson"), c = planFor(S.profile).find(x => x.id === L.courseId), me = S.profile;
+  const ov = $("#lesson"), c = planFor(S.profile).find(x => x.id === L.courseId) || S.courses.find(x => x.id === L.courseId) || { name: "", modules: [] }, me = S.profile;
   const prog = Math.round(Math.min(L.idx, L.queue.length) / L.queue.length * 100);
   const top = `<div class="lstop"><button class="iconbtn" type="button" data-l="close" aria-label="Salir de la lección">✕</button><div class="meter lmeter"><i style="width:${L.done ? 100 : prog}%"></i></div>
     <div class="hearts" aria-label="${L.hearts} vidas">${[0, 1, 2].map(i => HEART(i < L.hearts)).join("")}</div></div>`;

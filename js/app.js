@@ -1,7 +1,7 @@
 // Ruta de Dominio IA · aplicación principal: acceso, primer ingreso, ruta, equipo y perfil.
 import { Api, Auth } from "./api.js";
 import { AV } from "./avatar.js";
-import { S, ctx, COLORS, AIS, TOPICS, aiName, aisFor, planFor, equivalents, loadAll, schedule, metrics, mastery, training, badges } from "./state.js";
+import { S, ctx, AIS, aiColor, TOPICS, aiName, aisFor, planFor, equivalents, loadAll, schedule, metrics, mastery, training, badges } from "./state.js";
 import { viewDemuestra, wireDemuestra, DEM, BADGE } from "./lesson.js";
 import { viewEntrenar, wireEntrenar } from "./training.js";
 import { $, esc, fmtDate, isoDate, h1, firstName, initials, toast, niceError, initTheme } from "./util.js";
@@ -11,7 +11,7 @@ const avatarOf = (p, size) => p && p.avatar ? AV.svg(p.avatar, size) : `<div cla
 const BADGE_COLORS = ["#6c5ce7", "#d97757", "#21b47e", "#3b8cf0", "#f2557f", "#c98a00"];
 const safeUrl = u => /^https:\/\//i.test(u || "") ? u : "";
 const aiTag = ai => `<span class="aitag" style="--ai:${(AIS[ai] || { c: "var(--muted)" }).c}">${esc(aiName(ai))}</span>`;
-const aiPicker = (name, selected) => `<div class="aipick">${Object.entries(AIS).map(([k, a]) => `<label style="--ai:${a.c}"><input type="checkbox" name="${name}" value="${k}" ${selected.includes(k) ? "checked" : ""}><span>${a.name}</span></label>`).join("")}</div>`;
+const aiPicker = (name, selected) => `<div class="aipick" role="group" aria-label="IAs">${Object.entries(AIS).map(([k, a]) => `<label style="--ai:${a.c}"><input type="checkbox" name="${name}" value="${k}" ${selected.includes(k) ? "checked" : ""}><span>${a.name}</span></label>`).join("")}</div>`;
 const picked = (root, name) => [...root.querySelectorAll(`input[name="${name}"]:checked`)].map(i => i.value);
 // Dominio por IA: porcentaje de módulos aprobados en los cursos de cada IA
 function masteryByAi(p) {
@@ -92,6 +92,7 @@ function retoHTML(label, showBack) {
     <div class="course c-violet" id="r-prev" aria-live="polite"></div></form>`;
 }
 function paintRetoPreview() {
+  if (!S.team && ED.reto.ais && !ED.reto.ais.length) { $("#r-prev").innerHTML = `<span class="kicker">Con este reto</span><h2>Elige al menos una IA</h2><p>Marca las IAs que vas a aprender para ver tu plan y la fecha en que terminas.</p>`; return; }
   const r = ED.reto, sc = schedule(r), total = sc.length ? sc[sc.length - 1].cumHours : 0;
   $("#r-prev").innerHTML = `<span class="kicker">Con este reto</span><h2>Terminas el ${fmtDate(sc[sc.length - 1].endAt)}</h2>
     <p>${sc.length} cursos · ${h1(total)} horas · unas ${Math.ceil(total / r.hours_per_week)} semanas.</p>
@@ -147,7 +148,7 @@ function viewRuta() {
   ${ms.verified.length ? `<section class="card stack"><h3>Mis insignias</h3><div class="badges">${m.plan.filter(c => ms.verified.includes(c.id)).map((c, i) => BADGE(BADGE_COLORS[i % BADGE_COLORS.length], "Domina " + c.name)).join("")}</div></section>` : ""}
   <section class="stack"><h2>Tu plan, curso por curso</h2><div class="grid2">${m.plan.map((c, i) => {
     const b = ms.byCourse[c.id] || { k: 0, n: 0, pct: 0 }, hrs = c.hours * (b.n ? b.k / b.n : 0), isNow = i === nowIdx, late = !b.verified && c.endAt < now;
-    return `<article class="course ${COLORS[i % COLORS.length]} ${b.verified ? "done" : ""} ${isNow ? "now" : ""}">
+    return `<article class="course ${aiColor(c.ai)} ${b.verified ? "done" : ""} ${isNow ? "now" : ""}">
       <div class="hd"><span class="num">${b.verified ? "★" : i + 1}</span><div class="stack" style="gap:4px"><span class="org">${aiTag(c.ai)} ${esc(c.org)}</span><h3>${esc(c.name)}</h3></div></div>
       <div class="tags"><span class="tag">${fmtDate(c.startAt)} → ${fmtDate(c.endAt)}</span><span class="tag">${h1(c.hours)} h</span>
         ${b.verified ? `<span class="pill ok">★ Insignia ganada</span>` : late ? `<span class="pill bad">Debía terminar</span>` : isNow ? `<span class="pill acc">En curso</span>` : ""}</div>
@@ -198,8 +199,8 @@ function viewEquipo() {
       ${multi ? `<div class="row">${byAi.map(a => `<span class="aitag" style="--ai:${AIS[a.ai].c}">${esc(aiName(a.ai))} ${a.pct}%</span>`).join("")}</div>` : ""}
       <div class="small muted">${h1(x.actual)} de ${h1(x.total)} h · termina ${fmtDate(x.end)} · ${tr.points} puntos</div>
       <div class="badges">${badges(p).filter(b => b.on).map(b => `<span class="badge on">★ ${b.t}</span>`).join("") || `<span class="small muted">Sin insignias todavía</span>`}</div></div>`; }).join("")}</section>
-  <section class="card stack"><h3>Tabla del equipo</h3><div class="tablebox"><table><thead><tr><th>#</th><th>Persona</th><th class="num">Reto</th><th class="num">Horas demostradas</th><th class="num">Esperado</th><th class="num">Cumplimiento</th><th class="num">Dominio</th>${multi ? aisFor(S.profile).map(ai => `<th class="num">${esc(aiName(ai))}</th>`).join("") : ""}<th class="num">Puntos</th></tr></thead><tbody>
-    ${people.filter(r => r.x).map((r, i) => `<tr><td>${i + 1}</td><td>${esc(r.p.display_name)}</td><td class="num">${h1(r.p.hours_per_week)} h/sem</td><td class="num">${h1(r.x.actual)}</td><td class="num">${h1(r.x.expected)}</td><td class="num">${r.x.compliance}%</td><td class="num">${r.x.ms.pct}%</td>${multi ? r.byAi.map(a => `<td class="num">${a.pct}%</td>`).join("") : ""}<td class="num">${r.tr.points}</td></tr>`).join("")}</tbody></table></div></section>
+  <section class="card stack"><h3>Tabla del equipo</h3><div class="tablebox"><table><thead><tr><th>#</th><th>Persona</th><th class="num">Reto</th><th class="num">Horas demostradas</th><th class="num">Esperado</th><th class="num">Cumplimiento</th><th class="num">Dominio</th>${multi ? aisFor(S.profile).map(ai => `<th class="num nt">${esc(aiName(ai))}</th>`).join("") : ""}<th class="num">Puntos</th></tr></thead><tbody>
+    ${people.filter(r => r.x).map((r, i) => `<tr><td>${i + 1}</td><td>${esc(r.p.display_name)}</td><td class="num" style="white-space:nowrap">${h1(r.p.hours_per_week)} h/sem</td><td class="num">${h1(r.x.actual)}</td><td class="num">${h1(r.x.expected)}</td><td class="num">${r.x.compliance}%</td><td class="num">${r.x.ms.pct}%</td>${multi ? r.byAi.map(a => `<td class="num">${a.pct}%</td>`).join("") : ""}<td class="num">${r.tr.points}</td></tr>`).join("")}</tbody></table></div></section>
   <section class="row"><button class="btn" data-act="leave" type="button">Salir del equipo</button></section>`;
 }
 function wireEquipo(v) {

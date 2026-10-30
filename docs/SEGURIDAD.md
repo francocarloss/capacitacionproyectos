@@ -36,6 +36,16 @@ Responsable: SISO (`.claude/agents/siso.md`). Este documento resume las amenazas
   - foco al cambiar de vista;
   - limpieza de la dirección al cerrar sesión.
 
+- **Auditoría del SISO (v4 multi-IA):** 16 controles verificados, sin hallazgos críticos ni altos. Con `supabase/9_correcciones_siso_v4.sql` (aplicado) se corrigieron:
+  - aprobar sin saber, porque la respuesta se revelaba al fallar: ahora hay que acertar a la primera todas las preguntas menos una, y la respuesta no se muestra mientras la lección sigue activa;
+  - sesiones cerradas que se volvían a procesar;
+  - IAs repetidas en `ais`;
+  - formato de `courses` (URL https, `modules` como arreglo, `id` seguro);
+  - lecciones de cursos fuera de la ruta;
+  - nombres con `<` o `>` al registrarse.
+
+  También se rotaron 2 preguntas que coincidían con el historial público. Queda pendiente igualar la longitud de las opciones: hoy la respuesta correcta suele ser la más larga.
+
 ## Pendientes de configuración (panel de Supabase, Authentication)
 
 1. **Sign In / Providers → Email:** mantener **Confirm email** activo y poner la longitud mínima de contraseña en **10**.
