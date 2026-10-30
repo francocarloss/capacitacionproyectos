@@ -1,6 +1,5 @@
 // Avatares estilo anime dibujados en SVG a partir de unas pocas opciones.
-(() => {
-"use strict";
+// Los valores se validan contra listas cerradas: un avatar guardado nunca puede inyectar código.
 const SKIN = { clara: ["#f9dcc4", "#eebfa0"], media: ["#efc39f", "#d9a37c"], morena: ["#d9a079", "#bf8259"], canela: ["#c08458", "#a06a43"], oscura: ["#8d5a3b", "#71452b"] };
 const HAIR = { negro: ["#1d1b24", "#3b3748"], castano_oscuro: ["#3b2418", "#5c3a28"], castano: ["#6b4226", "#8f5c37"], castano_claro: ["#a0703f", "#c8955c"], rubio: ["#d9b26a", "#efd28f"], rojo: ["#8e2f22", "#b9483a"] };
 const EYES = { cafe: "#5a3420", oscuro: "#2b1c14", miel: "#a8682a", verde: "#3f7a4a", azul: "#3a6ea8" };
@@ -72,10 +71,16 @@ function outfit(o) {
   return body + `<path d="M84 150 L100 168 L116 150 L112 147 L100 160 L88 147 Z" fill="${d.shirt}"/>`;
 }
 
+// Toma solo valores conocidos; cualquier otro se reemplaza por el valor por defecto.
+export function sanitizeAvatar(a) {
+  const base = PRESETS[0].a, out = {};
+  for (const k of Object.keys(OPTIONS)) out[k] = a && OPTIONS[k].includes(a[k]) ? a[k] : base[k];
+  return out;
+}
 let UID = 0;
-function avatarSVG(a, size = 120) {
+export function avatarSVG(a, size = 120) {
   const cid = "avc" + (++UID);
-  a = Object.assign({}, PRESETS[0].a, a || {});
+  a = sanitizeAvatar(a);
   const sk = SKIN[a.skin] || SKIN.media, hc = HAIR[a.hairColor] || HAIR.negro, ec = EYES[a.eyes] || EYES.cafe;
   const glasses = a.glasses === "redondos" ? `<g fill="none" stroke="#2a2733" stroke-width="2.4"><circle cx="84" cy="100" r="14"/><circle cx="116" cy="100" r="14"/><path d="M98 99 L102 99"/></g>`
     : a.glasses === "rectos" ? `<g fill="none" stroke="#2a2733" stroke-width="2.4"><rect x="69" y="89" width="30" height="22" rx="6"/><rect x="101" y="89" width="30" height="22" rx="6"/></g>` : "";
@@ -101,5 +106,4 @@ function avatarSVG(a, size = 120) {
     </g></g></svg>`;
 }
 
-window.AVATAR = { svg: avatarSVG, OPTIONS, LABELS, PRESETS, PRETTY, SKIN, HAIR, EYES, OUTFIT };
-})();
+export const AV = { svg: avatarSVG, sanitize: sanitizeAvatar, OPTIONS, LABELS, PRESETS, PRETTY, SKIN, HAIR, EYES, OUTFIT };

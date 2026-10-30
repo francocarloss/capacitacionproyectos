@@ -1,16 +1,11 @@
-// Catálogo, equipo y contenido de entrenamiento de la Ruta de Dominio IA.
+// Catálogo de cursos (datos de presentación) y contenido de práctica.
+// Las horas oficiales y las preguntas de "Demuestra" viven en la base de datos.
 // Las horas marcadas con est:true son estimaciones (el proveedor no publica la duración exacta).
 
-window.TEAM = [
-  "Nicte Antonieta Salinas Martinez",
-  "Walter Danilo Lopez Antillon",
-  "Alejandro Castañeda Porras",
-  "Tania Yadira Gomez Gomez",
-  "Carlos Yovany Franco Cano"
-];
+
 
 // track: "todos" | "tecnico" | "general" (general = reemplazo para perfiles no técnicos)
-window.COURSES = [
+export const COURSES = [
   { id: "c101", name: "Claude 101", org: "Anthropic Academy", track: "todos", hours: 3.5, est: false,
     detail: "13 lecciones (~2.5 h) + 1 h de práctica en tu trabajo diario.",
     url: "https://anthropic.skilljar.com/",
@@ -65,28 +60,25 @@ window.COURSES = [
     detail: "Repaso de los 7 dominios del CCAO-F y simulacros en la sección Entrenamiento.",
     url: "",
     learn: "Dominar evaluación de respuestas, integración en flujos, gobierno, prompting, selección de modelo, gestión de conocimiento y optimización.",
-    modules: ["Evaluación y validación (21%)", "Integración en flujos (16%)", "Gobierno y riesgo (15%)", "Prompting (14%)", "Producto y modelo (12%)", "Gestión de conocimiento (12%)", "Optimización (10%)"] },
-  { id: "exam", name: "Examen CCAO-F o presentación final", org: "Anthropic", track: "todos", hours: 2, est: false,
-    detail: "60 preguntas en 120 min (USD 99, requiere Claude Partner). Si no aplica, presentación del proyecto al equipo.",
-    url: "",
-    learn: "Validar oficialmente tu nivel en Claude o demostrarlo con un caso real.",
-    modules: ["Examen o presentación", "Retroalimentación del equipo"] }
+    modules: ["Evaluación y validación (21%)", "Integración en flujos (16%)", "Gobierno y riesgo (15%)", "Prompting (14%)", "Producto y modelo (12%)", "Gestión de conocimiento (12%)", "Optimización (10%)"] }
+
 ];
 
-window.SKIPPED = [
+export const SKIPPED = [
   { name: "OpenAI · AI Foundations", why: "Lo cubren Claude 101 y AI Fluency (instrucciones claras, contexto y revisión de respuestas)." },
   { name: "OpenAI · Applied AI Foundations", why: "Lo cubren AI Fluency y Claude Cowork (llevar una tarea real del puesto a la IA)." },
   { name: "Google AI Essentials", why: "Prompting, uso responsable y productividad ya están en AI Fluency y Claude 101." },
   { name: "DeepLearning.AI · Generative AI for Everyone", why: "Los fundamentos de IA generativa ya están en AI Fluency." },
   { name: "OpenAI · Agents and Workflows", why: "Para perfiles técnicos lo cubren Claude API y MCP; para el resto, n8n." }
 ];
-window.OPTIONAL = [
+export const OPTIONAL = [
+  { name: "Examen oficial Claude Certified Associate (CCAO-F)", why: "60 preguntas en 120 min, USD 99. Requiere que la empresa sea Claude Partner. Tu preparación es el curso de repaso de esta ruta." },
   { name: "Microsoft AB-730 AI Business Professional", why: "Solo si el equipo trabaja con Microsoft 365 Copilot. ~USD 165." },
   { name: "Google Cloud Generative AI Leader", why: "Opcional para líderes que definan la estrategia de IA. ~USD 99." }
 ];
 
 // ---------- Entrenamiento ----------
-window.QUIZ = [
+export const QUIZ = [
   { q: "Vas a pedirle a Claude un resumen de un contrato para tu jefe. ¿Qué agrega más valor al prompt?",
     o: ["Escribir 'resume esto' en mayúsculas", "Decir para quién es, qué decisiones debe tomar y el formato deseado", "Pedir que lo haga lo más largo posible", "Pegar el contrato dos veces"], a: 1,
     e: "El contexto (quién lo leerá, para qué) y el formato son lo que más mejora el resultado. Es el principio de Descripción de AI Fluency." },
@@ -119,7 +111,7 @@ window.QUIZ = [
     e: "Mide el tiempo (o errores) antes y después en un proceso real: es lo que se presenta a dirección." }
 ];
 
-window.HALLU = [
+export const HALLU = [
   { title: "Reporte de ventas",
     ask: "Resume las ventas del trimestre a partir de este dato: Q3 vendimos 1,240 unidades, 8% más que Q2.",
     sentences: [
@@ -147,7 +139,7 @@ window.HALLU = [
     ] }
 ];
 
-window.PROMPT_LAB = [
+export const PROMPT_LAB = [
   { weak: "hazme un correo", context: "Tienes que avisar a un cliente que su pedido llega 3 días tarde.",
     tip: "Indica a quién va, qué pasó, el tono y qué quieres que haga el cliente." },
   { weak: "analiza esto", context: "Tienes una tabla de quejas de clientes del último mes y quieres saber qué corregir primero.",
@@ -155,7 +147,7 @@ window.PROMPT_LAB = [
   { weak: "dame ideas", context: "Necesitas actividades para capacitar a tu área en IA en 30 minutos semanales.",
     tip: "Define la audiencia, el tiempo, la cantidad de ideas y cómo quieres que se presenten." }
 ];
-window.RUBRIC = [
+export const RUBRIC = [
   { id: "rol", label: "Rol o contexto de quién pide", re: /(soy|eres|act[úu]a|como (un|una)|mi (área|equipo|puesto)|trabajo en)/i },
   { id: "aud", label: "Para quién es el resultado", re: /(cliente|jefe|gerente|equipo|direcci[óo]n|audiencia|lector|para (el|la|los|las|mi))/i },
   { id: "obj", label: "Objetivo o decisión", re: /(objetivo|para (decidir|saber|que)|necesito|quiero que|meta|prop[óo]sito)/i },
@@ -164,7 +156,7 @@ window.RUBRIC = [
   { id: "dato", label: "Datos concretos del caso", re: /(\d|pedido|tabla|queja|fecha|producto|proceso)/i }
 ];
 
-window.CARDS = [
+export const CARDS = [
   ["Delegación", "Decidir qué parte del trabajo hace la IA y qué parte haces tú."],
   ["Descripción", "Explicar con claridad la tarea, el contexto y el formato que esperas."],
   ["Discernimiento", "Evaluar con criterio lo que la IA entrega antes de usarlo."],
@@ -179,7 +171,7 @@ window.CARDS = [
   ["Revisión humana", "Una persona valida el resultado cuando el riesgo o el impacto es alto."]
 ];
 
-window.CHALLENGES = [
+export const CHALLENGES = [
   "Usa Claude para redactar 3 correos reales de tu semana. Anota cuánto tiempo te ahorraste.",
   "Crea un Project en Claude con los documentos de tu área y úsalo en 2 conversaciones.",
   "Toma una respuesta de Claude y encuentra al menos un dato que tuviste que verificar.",

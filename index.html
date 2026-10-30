@@ -3,35 +3,35 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://adkfyxfpsykcscdiotjd.supabase.co wss://adkfyxfpsykcscdiotjd.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Ruta de Dominio IA</title>
+<meta name="description" content="Aprende a dominar la IA con Claude, módulo por módulo: define tu reto, demuestra lo que sabes y gana insignias con tu equipo.">
 <link rel="icon" href="assets/claude-color.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap">
-<link rel="stylesheet" href="styles.css">
-<script>try{const t=localStorage.getItem("ruta-ia:theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="css/styles.css">
+<script src="js/theme-init.js"></script>
 </head>
 <body>
+<a class="skip" href="#view">Saltar al contenido</a>
 <header class="top">
   <div class="wrap topin">
     <a class="brand" href="#ruta"><img src="assets/claude-color.svg" alt=""><span>Ruta de Dominio <b>IA</b></span></a>
     <nav id="nav" aria-label="Secciones" hidden>
-      <a href="#ruta">Mi ruta</a><a href="#demuestra">Demuestra</a><a href="#registrar">Registrar</a><a href="#entrenar">Entrenamiento</a><a href="#equipo">Equipo</a><a href="#perfil">Mi perfil</a>
+      <a href="#ruta">Mi ruta</a><a href="#demuestra">Demuestra</a><a href="#entrenar">Entrenamiento</a><a href="#equipo">Equipo</a><a href="#perfil">Mi perfil</a>
     </nav>
     <div class="tools">
       <button id="b-theme" class="iconbtn" type="button" aria-label="Cambiar a modo noche"></button>
-      <button id="b-me" class="mechip" type="button" hidden></button>
+      <button id="b-me" class="mechip" type="button" aria-label="Mi perfil" hidden></button>
     </div>
   </div>
 </header>
-<main class="wrap" id="view"></main>
-<div id="toast" class="toast" role="status" hidden></div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
-<script src="config.js"></script>
-<script src="data.js"></script>
-<script src="mastery.js"></script>
-<script src="avatar.js"></script>
-<script src="app.js"></script>
+<main class="wrap" id="view" tabindex="-1"></main>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<noscript><p class="wrap">Esta página necesita JavaScript.</p></noscript>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js" integrity="sha384-AkNSQdptcXlJ0/NBZc4qGk86cDVXcCevwoWgEKIpHOEfbvlXGLlIkimQtONt8KNf" crossorigin="anonymous"></script>
+<script type="module" src="js/app.js"></script>
 </body>
 </html>
