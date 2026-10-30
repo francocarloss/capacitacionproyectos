@@ -42,11 +42,13 @@ export function schedule(p) {
 }
 
 export function mastery(p) {
-  const rows = S.mastery.filter(m => m.user_id === p.id), key = r => r.course_id + ":" + r.module_idx;
+  // Solo cuentan los cursos de la ruta actual (si el equipo deja una IA, sus horas no inflan el avance)
+  const plan = planFor(p), inPlan = new Set(plan.map(c => c.id));
+  const rows = S.mastery.filter(m => m.user_id === p.id && inPlan.has(m.course_id)), key = r => r.course_id + ":" + r.module_idx;
   const passed = new Set(rows.map(key)), perfect = new Set(rows.filter(r => r.perfect).map(key));
   const xp = rows.reduce((a, r) => a + r.xp, 0), hours = rows.reduce((a, r) => a + Number(r.hours_credited), 0);
   const byCourse = {}; let total = 0, done = 0;
-  planFor(p).forEach(c => { const n = c.modules.length; if (!n) return;
+  plan.forEach(c => { const n = c.modules.length; if (!n) return;
     const k = c.modules.filter((_, i) => passed.has(c.id + ":" + i)).length;
     byCourse[c.id] = { n, k, pct: Math.round(k / n * 100), verified: k === n }; total += n; done += k; });
   const verified = Object.entries(byCourse).filter(([, v]) => v.verified).map(([id]) => id);

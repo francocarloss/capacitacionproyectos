@@ -9,6 +9,7 @@ import { $, esc, fmtDate, isoDate, h1, firstName, initials, toast, niceError, in
 initTheme();
 const avatarOf = (p, size) => p && p.avatar ? AV.svg(p.avatar, size) : `<div class="silhouette" style="width:${size}px;height:${size}px;font-size:${size / 3}px">${esc(initials(p?.display_name))}</div>`;
 const BADGE_COLORS = ["#6c5ce7", "#d97757", "#21b47e", "#3b8cf0", "#f2557f", "#c98a00"];
+const safeUrl = u => /^https:\/\//i.test(u || "") ? u : "";
 const aiTag = ai => `<span class="aitag" style="--ai:${(AIS[ai] || { c: "var(--muted)" }).c}">${esc(aiName(ai))}</span>`;
 const aiPicker = (name, selected) => `<div class="aipick">${Object.entries(AIS).map(([k, a]) => `<label style="--ai:${a.c}"><input type="checkbox" name="${name}" value="${k}" ${selected.includes(k) ? "checked" : ""}><span>${a.name}</span></label>`).join("")}</div>`;
 const picked = (root, name) => [...root.querySelectorAll(`input[name="${name}"]:checked`)].map(i => i.value);
@@ -155,7 +156,7 @@ function viewRuta() {
       <details><summary>Ver módulos</summary><p class="small muted" style="margin-top:6px">${esc(c.detail)}</p><ul>${c.modules.map(x => `<li>${esc(x)}</li>`).join("")}</ul></details>
       <div class="meter" role="img" aria-label="Dominio ${b.pct}%"><i style="width:${b.pct}%"></i></div>
       <div class="ft"><span class="small"><b>Dominio ${b.pct}%</b> · ${b.k}/${b.n} módulos · ${h1(hrs)} h</span>
-        <div class="row">${c.url ? `<a class="btn white small" href="${esc(c.url)}" target="_blank" rel="noopener noreferrer">Ir al curso</a>` : ""}<button class="btn small primary" data-demo="${c.id}" type="button">${b.verified ? "Repasar" : "Demuéstralo"}</button></div></div></article>`; }).join("")}</div></section>
+        <div class="row">${safeUrl(c.url) ? `<a class="btn white small" href="${esc(safeUrl(c.url))}" target="_blank" rel="noopener noreferrer">Ir al curso</a>` : ""}<button class="btn small primary" data-demo="${esc(c.id)}" type="button">${b.verified ? "Repasar" : "Demuéstralo"}</button></div></div></article>`; }).join("")}</div></section>
   ${ais.length > 1 ? equivTable(m.plan, ms, ais) : `<section class="card stack"><h3>¿Tu equipo usa otra IA?</h3><p class="muted small" style="margin:0">Hay rutas para Claude, ChatGPT, Copilot y Gemini. ${S.team ? "Quien administra tu equipo puede elegir varias en la sección Equipo" : "Puedes elegir varias en Mi perfil"} y verás qué curso de una IA equivale al de otra.</p></section>`}`;
 }
 // Equivalencias: cada fila es una competencia; cada columna, una IA

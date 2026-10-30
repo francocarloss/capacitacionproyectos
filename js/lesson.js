@@ -18,10 +18,10 @@ export function viewDemuestra() {
   const col = COLORS[planFor(p).findIndex(x => x.id === c.id) % COLORS.length];
   const next = c.modules.findIndex((_, i) => !ms.passed.has(c.id + ":" + i));
   return `<section class="banner" style="background:linear-gradient(135deg,#ff9a5c,#d9653f)"><div class="stack"><span class="kicker">Demuestra tu aprendizaje</span>
-      <h1>¿Cuánto sabes de verdad?</h1><p>Cada módulo es una lección de 3 preguntas con 3 vidas, calificada en el servidor. Al aprobarla sumas las horas de estudio de ese módulo. Domina todos los módulos de un curso y ganas su <b>insignia</b>.</p>
+      <h1>¿Cuánto sabes de verdad?</h1><p>Cada módulo es una lección de 3 preguntas con 3 vidas, calificada en el servidor. Para aprobar, acierta al menos 2 a la primera. Al aprobarla sumas las horas de estudio de ese módulo. Domina todos los módulos de un curso y ganas su <b>insignia</b>.</p>
       <div class="chips"><span class="chip">${ms.done} de ${ms.total} módulos</span><span class="chip">${ms.verified.length} insignias</span><span class="chip">${ms.xp} XP</span></div></div>
     <div class="ava">${AV.svg(p.avatar, 190)}<span class="bubble">${ms.done ? "¡Sigue así!" : "¡Demuestra lo que sabes!"}</span></div></section>
-  <div class="cpick" role="tablist" aria-label="Cursos">${courses.map(x => { const v = ms.byCourse[x.id]; return `<button type="button" role="tab" aria-selected="${x.id === c.id}" class="cchip ${x.id === c.id ? "on" : ""}" data-course="${x.id}" style="--pct:${v.pct}">
+  <div class="cpick" role="tablist" aria-label="Cursos">${courses.map(x => { const v = ms.byCourse[x.id]; return `<button type="button" role="tab" aria-selected="${x.id === c.id}" class="cchip ${x.id === c.id ? "on" : ""}" data-course="${esc(x.id)}" style="--pct:${v.pct}">
       <span class="ring"><span>${v.verified ? "★" : v.pct + "%"}</span></span><span>${multi && x.ai !== "comun" ? `<small class="cai" style="--ai:${AIS[x.ai].c}">${esc(aiName(x.ai))}</small>` : ""}${esc(x.name)}</span></button>`; }).join("")}</div>
   <section class="pathbox ${col}">
     <div class="pathhead"><span class="org">${tag(c.ai)} ${esc(c.org)}</span><h2>${esc(c.name)}</h2><p class="muted" style="margin:0">${b.k} de ${b.n} módulos dominados</p><div class="meter"><i style="width:${b.pct}%"></i></div></div>
@@ -30,8 +30,8 @@ export function viewDemuestra() {
         <button type="button" class="pbtn ${ok ? "ok" : open ? "open" : "lock"} ${isNext ? "next" : ""}" data-lesson="${i}" ${open ? "" : "disabled"} aria-label="Módulo ${i + 1}: ${esc(name)}${ok ? " (dominado)" : open ? "" : " (bloqueado)"}">${ok ? (pf ? "★" : "✓") : open ? i + 1 : LOCK}</button>
         <span class="plabel">${esc(name)}${ok ? `<small>${pf ? "Perfecto" : "Dominado"} · repasar</small>` : ""}</span></div>`; }).join("")}
       <div class="pnode" style="--x:0%"><span class="trophy ${b.verified ? "on" : ""}">${TROPHY}</span><span class="plabel">${b.verified ? "¡Insignia ganada!" : "Gana la insignia del curso"}</span></div></div>
-    <div class="row" style="justify-content:space-between">${ci > 0 ? `<button class="btn" data-course="${courses[ci - 1].id}" type="button">← ${esc(courses[ci - 1].name)}</button>` : "<span></span>"}
-      ${ci < courses.length - 1 ? `<button class="btn" data-course="${courses[ci + 1].id}" type="button">${esc(courses[ci + 1].name)} →</button>` : ""}</div>
+    <div class="row" style="justify-content:space-between">${ci > 0 ? `<button class="btn" data-course="${esc(courses[ci - 1].id)}" type="button">← ${esc(courses[ci - 1].name)}</button>` : "<span></span>"}
+      ${ci < courses.length - 1 ? `<button class="btn" data-course="${esc(courses[ci + 1].id)}" type="button">${esc(courses[ci + 1].name)} →</button>` : ""}</div>
   </section>`;
 }
 export function wireDemuestra(v) {
@@ -73,12 +73,12 @@ function paint() {
   if (L.done) {
     const d = L.done, win = d.passed;
     ov.innerHTML = `${top}<div class="lbody center pop"><div class="ava">${AV.svg(me.avatar, 170)}</div>
-      <h1>${win ? (d.perfect ? "¡Perfecto!" : "¡Módulo dominado!") : "Te quedaste sin vidas"}</h1>
+      <h1>${win ? (d.perfect ? "¡Perfecto!" : "¡Módulo dominado!") : d.hearts > 0 ? "¡Casi lo logras!" : "Te quedaste sin vidas"}</h1>
       <p class="muted">${esc(c.name)} · ${esc(c.modules[L.mi])}</p>
       <div class="lstats"><div class="tile" style="--t:var(--sun);--t-soft:var(--sun-soft)"><span>XP</span><b>+${d.xp || 0}</b></div>
         <div class="tile" style="--t:var(--mint);--t-soft:var(--mint-soft)"><span>Horas</span><b>+${Number(d.hours || 0).toLocaleString("es")}</b></div>
         <div class="tile" style="--t:var(--rose);--t-soft:var(--rose-soft)"><span>Precisión</span><b>${Math.round((d.first_ok || 0) / (d.total || 1) * 100)}%</b></div></div>
-      <p>${win ? (Number(d.hours) > 0 ? "Se sumaron automáticamente a tu reto las horas de estudio de este módulo." : "Repasaste un módulo que ya dominabas.") : "Repasa el módulo en el curso y vuelve a intentarlo. ¡Tú puedes!"}</p>
+      <p>${win ? (Number(d.hours) > 0 ? "Se sumaron automáticamente a tu reto las horas de estudio de este módulo." : "Repasaste un módulo que ya dominabas.") : (d.hearts > 0 ? `Para dominar el módulo necesitas acertar al menos ${d.need || Math.max(1, (d.total || 3) - 1)} preguntas a la primera. ` : "") + "Repasa el módulo en el curso y vuelve a intentarlo. ¡Tú puedes!"}</p>
       ${L.newBadge ? `<div class="explain pop">Ganaste la insignia <b>${esc(c.name)}</b>. ¡Demostraste que dominas el curso!</div>` : ""}
       <div class="row" style="justify-content:center">${win ? `<button class="btn primary" type="button" data-l="close">Continuar</button>` : `<button class="btn" type="button" data-l="close">Salir</button><button class="btn primary" type="button" data-l="retry">Intentar de nuevo</button>`}</div></div>`;
     ov.querySelector(".lbody .btn.primary").focus({ preventScroll: true });
@@ -89,7 +89,7 @@ function paint() {
       <div class="stack" style="gap:6px"><span class="kicker">${esc(c.modules[L.mi])}</span><h2>${esc(q.prompt)}</h2></div></div>
     <div class="lopts">${q.opts.map((o, k) => `<button type="button" class="lopt ${L.sel === k ? "sel" : ""} ${fb ? (o.i === fb.answer_idx ? "right" : L.sel === k ? "wrong" : "") : ""}" data-opt="${k}" ${fb || L.busy ? "disabled" : ""}><kbd>${k + 1}</kbd>${esc(o.t)}</button>`).join("")}</div></div>
   <div class="lfoot ${fb ? (fb.correct ? "good" : "badf") : ""}"><div class="lfin">
-    ${fb ? `<div class="stack" style="gap:4px"><h3>${fb.correct ? "¡Excelente!" : "Respuesta correcta: " + esc((q.opts.find(o => o.i === fb.answer_idx) || {}).t)}</h3><p style="margin:0">${esc(fb.explanation)}</p></div><button class="btn ${fb.correct ? "mintb" : "roseb"}" type="button" data-l="next">Continuar</button>`
+    ${fb ? `<div class="stack" style="gap:4px"><h3>${fb.correct ? "¡Excelente!" : fb.answer_idx == null ? "Esa no es la respuesta" : "Respuesta correcta: " + esc((q.opts.find(o => o.i === fb.answer_idx) || {}).t)}</h3><p style="margin:0">${fb.explanation ? esc(fb.explanation) : "Esta pregunta volverá al final de la lección."}</p></div><button class="btn ${fb.correct ? "mintb" : "roseb"}" type="button" data-l="next">Continuar</button>`
       : `<span class="muted small">Elige una respuesta</span><button class="btn primary" type="button" data-l="check" ${L.sel === null || L.busy ? "disabled" : ""}>${L.busy ? "Revisando…" : "Comprobar"}</button>`}</div></div>`;
   if (fb) ov.querySelector("[data-l='next']").focus({ preventScroll: true });
   else if (L.sel !== null) { const s = ov.querySelector(`[data-opt="${L.sel}"]`); if (s) s.focus({ preventScroll: true }); }
